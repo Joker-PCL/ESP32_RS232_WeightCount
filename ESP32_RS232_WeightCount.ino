@@ -66,8 +66,9 @@ void setup() {
   esp_task_wdt_init(60, true);  // 60 วินาทีสำหรับ wdt
 
   EEPROM.begin(100);
-  // EEPROM.writeUInt(machineID_address, machineID);
-  // EEPROM.commit();
+  EEPROM.writeUInt(machineID_address, machineID);
+  EEPROM.writeUInt(total_address, 0);
+  EEPROM.commit();
   machineID = EEPROM.readUInt(machineID_address);
   Total = EEPROM.readUInt(total_address);
 

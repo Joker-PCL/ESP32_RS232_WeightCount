@@ -167,9 +167,9 @@ void autoUpdate(void* val) {
 
   for (;;) {
     digitalWrite(LED_BUILTIN, HIGH);
-    delay(1000);
+    delay(200);
     digitalWrite(LED_BUILTIN, LOW);
-    delay(1000);
+    delay(200);
     if (button_boot.pressed) {  //to connect wifi via Android esp touch app
       Serial.println("Firmware update Starting..");
       firmwareUpdate("Reset");
