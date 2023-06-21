@@ -15,8 +15,8 @@ String FirmwareVer = {
   "1.1"
 };
 
-#define URL_fw_Version "https://raw.githubusercontent.com/Joker-PCL/Esp32_OTA/master/esp32_ota/bin_version.txt"
-#define URL_fw_Bin "https://raw.githubusercontent.com/Joker-PCL/Esp32_OTA/master/esp32_ota/fw.bin"
+#define URL_fw_Version "https://raw.githubusercontent.com/Joker-PCL/ESP32_RS232_WeightCount/main/bin_version.txt"
+#define URL_fw_Bin "https://raw.githubusercontent.com/Joker-PCL/ESP32_RS232_WeightCount/main/fw.bin"
 
 unsigned long previousMillis = 0;  // will store last time LED was updated
 unsigned long previousMillis_2 = 0;
