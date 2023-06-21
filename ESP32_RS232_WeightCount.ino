@@ -58,7 +58,7 @@ void setup() {
   lcd.createChar(6, tank_gun);
   lcd.createChar(7, bullet_mini);
   lcd.home();
-
+  
   // Note the format for setting a serial port is as follows: Serial2.begin(baud-rate, protocol, RX pin, TX pin);
   Serial.begin(115200);
   Serial2.begin(9600, SERIAL_8N1, RXD2, TXD2);
@@ -123,14 +123,13 @@ void mainLoop(void *val) {
       lcd.print("SET PRIMARY VALUE");
       lcd.setCursor(1, 3);
       lcd.print("PRESS PRINT BUTTON");
-
-      Serial.print("SetMaster: ");
+      
       lcd.setCursor(0, 2);
       lcd.print("PRIMARY : ");
       lcd.blink();
       Master = readSerial();
       lcd.noBlink();
-      Serial.println(String(Master) + " PCS");
+      Serial.println("PRIMARY:" + String(Master) + " PCS");
       clearScreen(0);
     } else {
       autoprtint_state = true;

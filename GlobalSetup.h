@@ -1,8 +1,18 @@
+#include <WiFi.h>
+#include <WiFiMulti.h>
+
 //  multitask
 TaskHandle_t Task0;
 TaskHandle_t Task1;
 
-const char* ssid = "weight_table";
+
+WiFiMulti wifiMulti;
+
+const char* ssid1 = "pcl_plant1";
+const char* ssid2 = "pcl_plant2";
+const char* ssid3 = "pcl_plant3";
+const char* ssid4 = "pcl_plant4";
+const char* ssid5 = "weight_table";
 const char* password = "plant172839";
 
 // Set the LCD address to 0x27 for a 16 chars and 2 line display

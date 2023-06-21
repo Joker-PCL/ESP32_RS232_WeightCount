@@ -1,4 +1,3 @@
-#include <WiFi.h>
 #include <HTTPClient.h>
 #include <HTTPUpdate.h>
 #include <WiFiClientSecure.h>
@@ -33,20 +32,6 @@ Button button_boot = {
     s->numberKeyPresses += 1;
     s->pressed = true;
 }*/
-
-void connect_wifi() {
-  Serial.println("Waiting for WiFi");
-  WiFi.begin(ssid, password);
-  while (WiFi.status() != WL_CONNECTED) {
-    delay(500);
-    Serial.print(".");
-  }
-
-  Serial.println("");
-  Serial.println("WiFi connected");
-  Serial.println("IP address: ");
-  Serial.println(WiFi.localIP());
-}
 
 void IRAM_ATTR isr() {
   button_boot.numberKeyPresses += 1;
@@ -154,8 +139,6 @@ void repeatedCall() {
       } else {
         Serial.println("Weak");
       }
-    } else {
-      connect_wifi();
     }
   }
 }
@@ -163,13 +146,30 @@ void repeatedCall() {
 void autoUpdate(void* val) {
   Serial.print("Active firmware version:");
   Serial.println(FirmwareVer);
-  connect_wifi();
+
+  wifiMulti.addAP(ssid1, password);
+  wifiMulti.addAP(ssid2, password);
+  wifiMulti.addAP(ssid3, password);
+  wifiMulti.addAP(ssid4, password);
+  wifiMulti.addAP(ssid5, password);
+  
+  Serial.println("Waiting for WiFi");
+  while (wifiMulti.run() != WL_CONNECTED) {
+    delay(1000);
+    Serial.print(".");
+  }
+
+  Serial.println("WiFi connected");
+  Serial.println("SSID: " + WiFi.SSID());
+  Serial.println("IP address:");
+  Serial.println(WiFi.localIP());
+  delay(1000);
 
   for (;;) {
     digitalWrite(LED_BUILTIN, HIGH);
-    delay(500);
+    delay(1000);
     digitalWrite(LED_BUILTIN, LOW);
-    delay(500);
+    delay(1000);
     if (button_boot.pressed) {  //to connect wifi via Android esp touch app
       Serial.println("Firmware update Starting..");
       firmwareUpdate("Reset");
