@@ -1,11 +1,9 @@
-#include "Esp32AutoUpdate.h"
 #include <Wire.h>
 #include <LiquidCrystal_I2C.h>
 #include <EEPROM.h>
 #include "esp_task_wdt.h"
-
-// Set the LCD address to 0x27 for a 16 chars and 2 line display
-LiquidCrystal_I2C lcd(0x27, 20, 4);
+#include "GlobalSetup.h"
+#include "Esp32AutoUpdate.h"
 
 // RS232 PINS
 #define RXD2 16
@@ -31,25 +29,14 @@ String readString;
 int Master;  // set master
 int currentWeight;
 
-uint8_t tank_wheelA[8] = { 0x1F, 0x1F, 0x1B, 0x11, 0x11, 0x1B, 0x1F, 0x1F };
-uint8_t tank_wheelB[8] = { 0x1F, 0x1F, 0x0E, 0x11, 0x11, 0x0E, 0x1F, 0x1F };
-uint8_t tank_wheel_L[8] = { 0x07, 0x0F, 0x1F, 0x1F, 0x1F, 0x1F, 0x0F, 0x07 };
-uint8_t tank_wheel_R[8] = { 0x1C, 0x1E, 0x1F, 0x1F, 0x1F, 0x1F, 0x1E, 0x1C };
-uint8_t tank_head_L[8] = { 0x00, 0x01, 0x07, 0x0F, 0x1F, 0x1F, 0x1F, 0x1F };
-uint8_t tank_head_R[8] = { 0x00, 0x10, 0x1C, 0x1E, 0x1F, 0x1F, 0x1F, 0x1F };
-uint8_t tank_gun[8] = { 0x00, 0x00, 0x00, 0x1F, 0x1F, 0x1F, 0x00, 0x00 };
-uint8_t bullet_mini[8] = { 0x00, 0x00, 0x0D, 0x1E, 0x1E, 0x0D, 0x00, 0x00 };
-
 unsigned int currentTime = 0;  // time stamp millis()
 unsigned int Total;            // total
 
 int currentState = 0;           // relay autoprint state
 bool autoprtint_state = false;  // on-off autoprint
 
-int machineID_address = 0;       // machine address EEPROM 
-int total_address = 10;          // total address EEPROM
-int sensor_address = 20;         // sensorType address EEPROM
-int sensorDelay_address = 30;    // sensorDelay address EEPROM
+int machineID_address = 0;     // machine address EEPROM
+int total_address = 10;        // total address EEPROM
 
 unsigned long machineID = 143001;  // machine ID
 unsigned long pressTime_menu = 0;
@@ -76,31 +63,16 @@ void setup() {
   Serial.begin(115200);
   Serial2.begin(9600, SERIAL_8N1, RXD2, TXD2);
 
-  esp_task_wdt_init(30, true);  // 10 วินาทีสำหรับ
+  esp_task_wdt_init(60, true);  // 60 วินาทีสำหรับ wdt
 
   EEPROM.begin(100);
   // EEPROM.writeUInt(machineID_address, machineID);
   // EEPROM.commit();
   machineID = EEPROM.readUInt(machineID_address);
   Total = EEPROM.readUInt(total_address);
-  sensor_type = EEPROM.readUInt(sensor_address);
-  autoPrint_delay = EEPROM.readUInt(sensorDelay_address);
-  
-
-  if (sensor_type < 0 && sensor_type > 1)
-    sensor_type = 1;
-  else
-    sensor_type = sensor_type;
-
-  if (autoPrint_delay > 2500)
-    autoPrint_delay = 2500;
-  else
-    autoPrint_delay = autoPrint_delay;
 
   Serial.println("machineID: " + String(machineID));
   Serial.println("Total: " + String(Total));
-  Serial.println("sensorType: " + String(sensor_type));
-  Serial.println("sensorDelay: " + String(autoPrint_delay));
 
   pinMode(btn_menu, INPUT_PULLUP);
   pinMode(btn_down, INPUT_PULLUP);
@@ -215,39 +187,25 @@ int readSerial() {
   Serial.println("ReadSerialPort>>");
   int btn_down_currentstate = 0;
   int btn_down_previousstate = 0;
+  int PCS = 0;
 
-  while (readString.length() == 0) {
-    // check autoprint sensor
-    if (autoprtint_state == true) {
-      if (digitalRead(SENSOR) == sensor_type) {
-        autoPrint();
-      } else {
-        currentTime = millis();
-        digitalWrite(AUTOPRINT, LOW);  // off autoprint relay
-        currentState = 0;
-      }
-    }
-
+  while (PCS <= 0) {
     //  check Serial Data cache
     if (Serial2.available() > 0)
       readString = Serial2.readString();
 
-    // check setting mode
-    if (!digitalRead(btn_menu)) {  // ถ้าสวิตช์ถูกกด
-      if (pressTime_menu == 0) {
-        pressTime_menu = millis();  // บันทึกเวลาเริ่มต้นการกดค้าง
-      }
-      if ((millis() - pressTime_menu) > 2000) {  // ตรวจสอบเวลาการกดค้าง
-        Serial.println("SettingMode>>");
-        readString = "";
-        setting();
-        pressTime_menu = 0;  // รีเซ็ตเวลาเริ่มต้นการกดค้าง
-      }
-    } else {
-      pressTime_menu = 0;  // รีเซ็ตเวลาเริ่มต้นการกดค้าง
-    }
-
     if (Master) {
+      // check autoprint sensor
+      if (autoprtint_state == true) {
+        if (digitalRead(SENSOR) == sensor_type) {
+          autoPrint();
+        } else {
+          currentTime = millis();
+          digitalWrite(AUTOPRINT, LOW);  // off autoprint relay
+          currentState = 0;
+        }
+      }
+
       bool total_update = false;
 
       lcd.setCursor(10, 3);
@@ -299,19 +257,21 @@ int readSerial() {
         total_update = false;
       }
     }
-  }
 
-  if (readString.length() > 0) {
-    digitalWrite(AUTOPRINT, LOW);  // off autoprint relay
-    digitalWrite(BUZZER2, HIGH);
-    delay(100);
-    digitalWrite(BUZZER2, LOW);
-    readString.replace("+", "");
-    readString.replace("pcs", "");
-    int PCS = readString.toInt();
-    readString = "";
 
-    return PCS;
+    if (readString.length() > 0) {
+      digitalWrite(AUTOPRINT, LOW);  // off autoprint relay
+      digitalWrite(BUZZER2, HIGH);
+      delay(100);
+      digitalWrite(BUZZER2, LOW);
+      readString.replace("+", "");
+      readString.replace("pcs", "");
+      PCS = readString.toInt();
+      readString = "";
+
+      if (PCS > 0)
+        return PCS;
+    }
   }
 }
 
@@ -358,85 +318,6 @@ void onLoad() {
   }
 }
 
-void setting() {
-  String sensor_typeDisplay;
-  settingMode = true;
-  selectmenu = 1;
-
-  if (sensor_type == 0) {
-    sensor_typeDisplay = "no";
-  } else {
-    sensor_typeDisplay = "nc";
-  }
-
-  lcd.clear();
-  lcd.noBlink();
-  lcd.setCursor(6, 0);
-  lcd.print("SETTING");
-  lcd.setCursor(0, 1);
-  lcd.print("1.sensor: " + String(sensor_typeDisplay));
-  lcd.setCursor(0, 2);
-  lcd.print("2.delay : " + String(autoPrint_delay) + " ms.");
-  lcd.setCursor(4, 3);
-  lcd.print("save,-,+,next");
-  delay(1500);
-  lcd.setCursor(18, selectmenu);
-  lcd.print("<<");
-
-  while (settingMode) {
-    if (!digitalRead(btn_exit)) {
-      EEPROM.writeUInt(sensor_address, sensor_type);
-      EEPROM.writeUInt(sensorDelay_address, autoPrint_delay);
-      EEPROM.commit();
-      lcd.clear();
-      lcd.setCursor(5, 0);
-      lcd.print("Saving...");
-      delay(500);
-      lcd.clear();
-      settingMode = false;
-      loop();  // กลับหน้าหลัก
-    } else if (!digitalRead(btn_down)) {
-      if (selectmenu == 1) {
-        lcd.setCursor(10, 1);
-        lcd.print("nc");
-        sensor_type = 1;
-      } else if (selectmenu == 0 && autoPrint_delay > 1000) {
-        autoPrint_delay -= 500;
-        lcd.setCursor(10, 2);
-        lcd.print(String(autoPrint_delay) + " ms.");
-      }
-      delay(500);
-    } else if (!digitalRead(btn_up)) {
-      if (selectmenu == 1) {
-        lcd.setCursor(10, 1);
-        lcd.print("no");
-        sensor_type = 0;
-      } else if (selectmenu == 0 && autoPrint_delay < 7000) {
-        autoPrint_delay += 500;
-        lcd.setCursor(10, 2);
-        lcd.print(String(autoPrint_delay) + " ms.");
-      }
-      delay(500);
-    } else if (!digitalRead(btn_menu)) {
-      selectmenu += 1;
-      if (selectmenu == 1) {
-        lcd.setCursor(18, selectmenu);
-        lcd.print("<<");
-        lcd.setCursor(18, selectmenu + 1);
-        lcd.print("  ");
-      } else if (selectmenu == 2) {
-        lcd.setCursor(18, selectmenu);
-        lcd.print("<<");
-        lcd.setCursor(18, selectmenu - 1);
-        lcd.print("  ");
-        selectmenu = 0;
-      }
-
-      delay(500);
-    }
-  }
-}
-
 // autoprint
 void autoPrint() {
   if (millis() - currentTime >= autoPrint_delay && currentState == 0) {
@@ -457,24 +338,6 @@ void alert() {
     digitalWrite(LED_RED, LOW);
     digitalWrite(BUZZER2, LOW);
     delay(100);
-  }
-}
-
-// แสดงผลแบบเรียงอักษร
-void textEnd(String text, int cols, int rows) {
-  for (int i = 0; i < text.length(); i++) {
-    lcd.setCursor(cols + i, rows);
-    lcd.print(text[i]);
-    delay(100);
-  }
-}
-
-// ลบอักษรหน้าจอแบบกำหนด แถว ตำแหน่ง จำนวน
-void clearScreen(int row) {
-  for (int i = 0; i < 20; i++) {
-    lcd.setCursor(i, row);
-    lcd.print(" ");
-    // delay(50);
   }
 }
 

@@ -4,13 +4,6 @@
 #include <WiFiClientSecure.h>
 #include "cert.h"
 
-//  multitask
-TaskHandle_t Task0;
-TaskHandle_t Task1;
-
-const char* ssid = "weight_table";
-const char* password = "plant172839";
-
 String FirmwareVer = {
   "1.1"
 };
@@ -60,12 +53,16 @@ void IRAM_ATTR isr() {
   button_boot.pressed = true;
 }
 
-void firmwareUpdate(void) {
+void firmwareUpdate(String version) {
   vTaskDelete(Task1);
+  lcd.clear();
+  textEnd("UPDATE FIRMWERE", 2, 0);
+  textEnd("VERSION " + version, 4, 1);
   WiFiClientSecure client;
   client.setCACert(rootCACertificate);
   httpUpdate.setLedPin(LED_BUILTIN, LOW);
   t_httpUpdate_return ret = httpUpdate.update(client, URL_fw_Bin);
+  textEnd("SUCCESS", 6, 3);
 
   switch (ret) {
     case HTTP_UPDATE_FAILED:
@@ -121,41 +118,49 @@ int FirmwareVersionCheck(void) {
     payload.trim();
     if (payload.equals(FirmwareVer)) {
       Serial.printf("\nDevice already on latest firmware version:%s\n", FirmwareVer);
-      return 0;
+      return false;
     } else {
       Serial.println(payload);
       Serial.println("New firmware detected");
-      return 1;
+      firmwareUpdate(payload);
     }
   }
-  return 0;
+  return false;
 }
 
 void repeatedCall() {
-  static int num = 0;
   unsigned long currentMillis = millis();
   if ((currentMillis - previousMillis) >= interval) {
     // save the last time you blinked the LED
     previousMillis = currentMillis;
-    if (FirmwareVersionCheck()) {
-      firmwareUpdate();
-    }
+    FirmwareVersionCheck();
   }
+
   if ((currentMillis - previousMillis_2) >= mini_interval) {
     previousMillis_2 = currentMillis;
-    Serial.print("idle loop...");
-    Serial.print(num++);
-    Serial.print(" Active fw version:");
+    Serial.print("Check fw version in:");
+    Serial.print((interval - (currentMillis - previousMillis)) / 1000);
+    Serial.println("sec.");
+    Serial.print("Active fw version:");
     Serial.println(FirmwareVer);
     if (WiFi.status() == WL_CONNECTED) {
-      Serial.println("wifi connected");
+      Serial.print("Wi-Fi Strength: ");
+      // Get RSSI value
+      int rssi = WiFi.RSSI();
+      if (rssi >= -50) {
+        Serial.println("Excellent");
+      } else if (rssi >= -70) {
+        Serial.println("Good");
+      } else {
+        Serial.println("Weak");
+      }
     } else {
       connect_wifi();
     }
   }
 }
 
-void autoUpdate(void* val) { 
+void autoUpdate(void* val) {
   Serial.print("Active firmware version:");
   Serial.println(FirmwareVer);
   connect_wifi();
@@ -167,7 +172,7 @@ void autoUpdate(void* val) {
     delay(500);
     if (button_boot.pressed) {  //to connect wifi via Android esp touch app
       Serial.println("Firmware update Starting..");
-      firmwareUpdate();
+      firmwareUpdate("Reset");
       button_boot.pressed = false;
     }
     repeatedCall();
