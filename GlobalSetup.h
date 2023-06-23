@@ -25,9 +25,9 @@ String GOOGLE_SCRIPT_ID = "AKfycbwPzTux1m1_9ESA7L0y_aIanjtEFkIZIeC8XhohXGwzAlfzj
 const int SENSOR = 12;
 const int LED_RED = 25;
 const int LED_GREEN = 26;
-const int BUZZER1 = 32;
-const int BUZZER2 = 4;
-const int AUTOPRINT = 33;
+const int BUZZER1 = 4;
+const int BUZZER2 = 33;
+const int AUTOPRINT = 32;
 
 const int btn_exit = 34;
 const int btn_down = 35;

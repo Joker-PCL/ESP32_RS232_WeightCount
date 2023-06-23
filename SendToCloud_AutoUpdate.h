@@ -90,7 +90,7 @@ void firmwareUpdate(String version) {
   textEnd("VERSION " + version, 4, 1);
   WiFiClientSecure client;
   client.setCACert(rootCACertificate);
-  httpUpdate.setLedPin(LED_BUILTIN, LOW);
+  // httpUpdate.setLedPin(LED_GREEN, LOW);
   t_httpUpdate_return ret = httpUpdate.update(client, URL_fw_Bin);
   textEnd("SUCCESS", 6, 3);
 
@@ -218,9 +218,9 @@ void autoUpdate(void* val) {
   delay(1000);
 
   for (;;) {
-    // digitalWrite(LED_BUILTIN, HIGH);
+    // digitalWrite(LED_GREEN, HIGH);
     // delay(200);
-    // digitalWrite(LED_BUILTIN, LOW);
+    // digitalWrite(LED_GREEN, LOW);
     // delay(200);
 
     if (button_boot.pressed) {  //to connect wifi via Android esp touch app

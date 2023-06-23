@@ -76,11 +76,11 @@ void setup() {
   // esp32 auto update setup
   pinMode(button_boot.PIN, INPUT);
   attachInterrupt(button_boot.PIN, isr, RISING);
-  pinMode(LED_BUILTIN, OUTPUT);
+  // pinMode(LED_BUILTIN, OUTPUT);
 
   // start program
-  xTaskCreatePinnedToCore(autoUpdate, "Task0", 100000, NULL, 10, &Task0, 0);
-  xTaskCreatePinnedToCore(mainLoop, "Task1", 30000, NULL, 9, &Task1, 1);
+  xTaskCreatePinnedToCore(mainLoop, "Task0", 80000, NULL, 10, &Task0, 0);
+  xTaskCreatePinnedToCore(autoUpdate, "Task1", 100000, NULL, 9, &Task1, 1);
 }
 
 void loop() {
