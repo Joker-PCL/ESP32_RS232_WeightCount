@@ -84,7 +84,7 @@ void IRAM_ATTR isr() {
 }
 
 void firmwareUpdate(String version) {
-  vTaskDelete(Task1);
+  vTaskDelete(Task0);
   lcd.clear();
   textEnd("UPDATE FIRMWERE", 2, 0);
   textEnd("VERSION " + version, 4, 1);
