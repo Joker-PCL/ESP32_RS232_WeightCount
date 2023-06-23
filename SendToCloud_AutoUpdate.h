@@ -1,17 +1,13 @@
+#include <HTTPClient.h>
+#include <HTTPUpdate.h>
+#include <WiFiClientSecure.h>
 #include "cert.h"
-
-// set version
-String FirmwareVer = {
-  "1.1"
-};
-
-#define URL_fw_Version "https://raw.githubusercontent.com/Joker-PCL/ESP32_RS232_WeightCount/main/bin_version.txt"
-#define URL_fw_Bin "https://raw.githubusercontent.com/Joker-PCL/ESP32_RS232_WeightCount/main/fw.bin"
+#include "time.h"
 
 unsigned long previousMillis = 0;  // will store last time LED was updated
 unsigned long previousMillis_2 = 0;
-const long interval = 60000;  // update and send to cloud timer
-const long mini_interval = 1000; // delay timer
+const long interval = 60000;
+const long mini_interval = 1000;
 
 struct Button {
   const uint8_t PIN;
@@ -32,51 +28,56 @@ Button button_boot = {
 }*/
 
 void sendToCloud() {
-  static bool flag = false;
-  struct tm timeinfo;
+  if (WiFi.status() == WL_CONNECTED) {
+    static bool flag = false;
+    struct tm timeinfo;
 
-  // Get current time
-  if (!getLocalTime(&timeinfo)) {
-    Serial.println("Failed to obtain time");
-    return;
+    // Get current time
+    if (!getLocalTime(&timeinfo)) {
+      Serial.println("Failed to obtain time");
+      return;
+    }
+
+    strftime(timeStringBuff, sizeof(timeStringBuff), "%A, %B %d %Y %H:%M:%S", &timeinfo);
+    String asString(timeStringBuff);
+    asString.replace(" ", "-");
+    Serial.print("Time:");
+    Serial.println(asString);
+
+    // This will send the request to the server
+    String url = host + GOOGLE_SCRIPT_ID + "/exec?";
+    url += "machineID=" + String(machineID);
+    url += "&";
+    url += "amount=" + String(count);
+
+    Serial.print("POST data to spreadsheet:");
+    Serial.println(url);
+
+    HTTPClient http;
+    http.begin(url.c_str());
+    http.setFollowRedirects(HTTPC_STRICT_FOLLOW_REDIRECTS);
+
+    int httpCode = http.GET();
+    Serial.print("HTTP Status Code: ");
+    Serial.println(httpCode);
+
+    url = "";
+
+    //getting response from google sheet
+    if (httpCode == 200) {
+      String payload = http.getString();
+      Serial.println("Payload: " + payload);
+      count = 0;  // Reset count
+    } else {
+      Serial.println("Failed to connect to the server");
+    }
+
+    http.end();
   }
 
-  strftime(timeStringBuff, sizeof(timeStringBuff), "%A, %B %d %Y %H:%M:%S", &timeinfo);
-  String asString(timeStringBuff);
-  asString.replace(" ", "-");
-  Serial.print("Time:");
-  Serial.println(asString);
-
-  // This will send the request to the server
-  String url = host + GOOGLE_SCRIPT_ID + "/exec?";
-  url += "machineID=" + String(machineID);
-  url += "&";
-  url += "amount=" + String(count);
-
-  Serial.print("POST data to spreadsheet:");
-  Serial.println(url);
-
-  HTTPClient http;
-  http.begin(url.c_str());
-  http.setFollowRedirects(HTTPC_STRICT_FOLLOW_REDIRECTS);
-
-  int httpCode = http.GET();
-  Serial.print("HTTP Status Code: ");
-  Serial.println(httpCode);
-
-  url = "";
-
-  //getting response from google sheet
-  if (httpCode == 200) {
-    String payload = http.getString();
-    Serial.println("Payload: " + payload);
-    count = 0;  // Reset count
-  } else {
-    Serial.println("Failed to connect to the server");
-  }
-
-  http.end();
+  delay(2000);
 }
+
 
 void IRAM_ATTR isr() {
   button_boot.numberKeyPresses += 1;
@@ -84,15 +85,14 @@ void IRAM_ATTR isr() {
 }
 
 void firmwareUpdate(String version) {
-  vTaskDelete(Task0);
+  vTaskDelete(Task1);
   lcd.clear();
   textEnd("UPDATE FIRMWERE", 2, 0);
   textEnd("VERSION " + version, 4, 1);
   WiFiClientSecure client;
   client.setCACert(rootCACertificate);
-  // httpUpdate.setLedPin(LED_GREEN, LOW);
+  httpUpdate.setLedPin(LED_STATUS, LOW);
   t_httpUpdate_return ret = httpUpdate.update(client, URL_fw_Bin);
-  textEnd("SUCCESS", 6, 3);
 
   switch (ret) {
     case HTTP_UPDATE_FAILED:
@@ -163,11 +163,11 @@ void repeatedCall() {
   if ((currentMillis - previousMillis) >= interval) {
     // save the last time you blinked the LED
     previousMillis = currentMillis;
-    FirmwareVersionCheck();
 
-    if (count > 0) {
+    if (count > 0)
       sendToCloud();
-    }
+
+    FirmwareVersionCheck();
   }
 
   if ((currentMillis - previousMillis_2) >= mini_interval) {
@@ -204,7 +204,7 @@ void autoUpdate(void* val) {
 
   Serial.println("Waiting for WiFi");
   while (wifiMulti.run() != WL_CONNECTED) {
-    delay(1000);
+    delay(500);
     Serial.print(".");
   }
 
@@ -218,19 +218,24 @@ void autoUpdate(void* val) {
   delay(1000);
 
   for (;;) {
-    // digitalWrite(LED_GREEN, HIGH);
-    // delay(200);
-    // digitalWrite(LED_GREEN, LOW);
-    // delay(200);
-
     if (button_boot.pressed) {  //to connect wifi via Android esp touch app
       Serial.println("Firmware update Starting..");
       firmwareUpdate("Reset");
       button_boot.pressed = false;
     }
 
-    if (wifiMulti.run() == WL_CONNECTED) {
-      repeatedCall();
+    while (wifiMulti.run() != WL_CONNECTED) {
+      digitalWrite(LED_STATUS, HIGH);
+      delay(500);
+      digitalWrite(LED_STATUS, LOW);
+      delay(500);
+      Serial.print(".");
     }
+
+    digitalWrite(LED_STATUS, HIGH);
+    delay(200);
+    digitalWrite(LED_STATUS, LOW);
+    delay(200);
+    repeatedCall();
   }
 }

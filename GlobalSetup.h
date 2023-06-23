@@ -17,12 +17,20 @@ const char* ssid4 = "pcl_plant4";
 const char* ssid5 = "weight_table";
 const char* password = "plant172839";
 
+String FirmwareVer = {
+  "1.0"
+};
+
+#define URL_fw_Version "https://raw.githubusercontent.com/Joker-PCL/ESP32_RS232_WeightCount/main/bin_version.txt"
+#define URL_fw_Bin "https://raw.githubusercontent.com/Joker-PCL/ESP32_RS232_WeightCount/main/fw.bin"
+
 // Google script ID and required credentials
 String host = "https://script.google.com/macros/s/";
 String GOOGLE_SCRIPT_ID = "AKfycbwPzTux1m1_9ESA7L0y_aIanjtEFkIZIeC8XhohXGwzAlfzjogOTG92L_W6e024Z7vO";  // change Gscript ID
 
 // INPUT AND OUTPUT
 const int SENSOR = 12;
+const int LED_STATUS = 2;
 const int LED_RED = 25;
 const int LED_GREEN = 26;
 const int BUZZER1 = 4;
@@ -47,8 +55,8 @@ int machineID_address = 0;  // machine address EEPROM
 unsigned long machineID = 20104;  // machine ID
 
 int total_address = 10; // total address EEPROM
-unsigned int Total; // total
-unsigned int count; // cache count
+unsigned int Total = 0; // total
+unsigned int count = 0; // cache count
 
 unsigned long pressTime_menu = 0;
 unsigned long pressTime_countReset = 0;
