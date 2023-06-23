@@ -1,48 +1,19 @@
 #include <Wire.h>
+#include <WiFi.h>
+#include <WiFiMulti.h>
+#include <HTTPClient.h>
+#include <HTTPUpdate.h>
+#include <WiFiClientSecure.h>
+
 #include <LiquidCrystal_I2C.h>
 #include <EEPROM.h>
 #include "esp_task_wdt.h"
 #include "GlobalSetup.h"
-#include "Esp32AutoUpdate.h"
+#include "SendToCloud_AutoUpdate.h"
 
 // RS232 PINS
 #define RXD2 16
 #define TXD2 17
-
-// INPUT AND OUTPUT
-const int SENSOR = 12;
-const int LED_RED = 25;
-const int LED_GREEN = 26;
-const int BUZZER1 = 32;
-const int BUZZER2 = 4;
-const int AUTOPRINT = 33;
-
-const int btn_exit = 34;
-const int btn_down = 35;
-const int btn_up = 36;
-const int btn_menu = 39;
-
-int selectmenu = 1;
-bool settingMode = false;
-
-String readString;
-int Master;  // set master
-int currentWeight;
-
-unsigned int currentTime = 0;  // time stamp millis()
-unsigned int Total;            // total
-
-int currentState = 0;           // relay autoprint state
-bool autoprtint_state = false;  // on-off autoprint
-
-int machineID_address = 0;     // machine address EEPROM
-int total_address = 10;        // total address EEPROM
-
-unsigned long machineID = 143001;  // machine ID
-unsigned long pressTime_menu = 0;
-unsigned long pressTime_countReset = 0;
-unsigned int autoPrint_delay = 2500;  // sensorDelay ms.
-int sensor_type = 0;                  // sensorType 0=nc,1=nc
 
 void setup() {
   // initialize the LCD
@@ -118,7 +89,7 @@ void loop() {
 void mainLoop(void *val) {
   for (;;) {
     if (!Master) {
-      autoprtint_state = false;
+      autoprtint = false;
       lcd.clear();
       lcd.setCursor(1, 0);
       lcd.print("SET PRIMARY VALUE");
@@ -133,7 +104,7 @@ void mainLoop(void *val) {
       Serial.println("PRIMARY:" + String(Master) + " PCS");
       clearScreen(0);
     } else {
-      autoprtint_state = true;
+      autoprtint = true;
       lcd.setCursor(4, 0);
       lcd.print("<< READY >>");
       lcd.setCursor(0, 1);
@@ -155,13 +126,12 @@ void mainLoop(void *val) {
       lcd.setCursor(0, 3);
       lcd.print("WEIGHING: " + String(currentWeight) + " PCS");
       Total++;
+      count++;
       EEPROM.writeUInt(total_address, Total);
       EEPROM.commit();
       delay(500);
 
-      if (currentWeight == 0) {
-        Restart();
-      } else if (currentWeight == Master) {
+      if (currentWeight == Master) {
         Serial.println("Passed: " + String(currentWeight) + " PCS");
         lcd.setCursor(0, 3);
         lcd.print("                    ");
@@ -182,9 +152,10 @@ void mainLoop(void *val) {
   }
 }
 
-// read SerialPort RS232
+// Read serial port RS232
 int readSerial() {
   Serial.println("ReadSerialPort>>");
+  Serial2.flush();
   int btn_down_currentstate = 0;
   int btn_down_previousstate = 0;
   int PCS = 0;
@@ -196,13 +167,13 @@ int readSerial() {
 
     if (Master) {
       // check autoprint sensor
-      if (autoprtint_state == true) {
+      if (autoprtint == true) {
         if (digitalRead(SENSOR) == sensor_type) {
           autoPrint();
         } else {
           currentTime = millis();
           digitalWrite(AUTOPRINT, LOW);  // off autoprint relay
-          currentState = 0;
+          autoprtint_state = 0;
         }
       }
 
@@ -214,7 +185,7 @@ int readSerial() {
       // total -1
       btn_down_currentstate = digitalRead(btn_down);
       if (btn_down_currentstate == 0 && btn_down_previousstate == 1 && Total > 0) {
-        Total -= 1;
+        Total--;
         EEPROM.writeUInt(total_address, Total);
         EEPROM.commit();
         Serial.println("TOTAL: " + String(Total) + " PCS");
@@ -222,6 +193,9 @@ int readSerial() {
         delay(100);
         digitalWrite(BUZZER2, LOW);
         total_update = true;
+
+        if(count > 0)
+          count--;
       }
 
       btn_down_previousstate = btn_down_currentstate;
@@ -320,11 +294,30 @@ void onLoad() {
 
 // autoprint
 void autoPrint() {
-  if (millis() - currentTime >= autoPrint_delay && currentState == 0) {
+  if(Master <= 3)
+    autoPrint_delay = 600;
+  else if (Master <= 5)
+    autoPrint_delay = 800;
+  else if (Master <= 10)
+    autoPrint_delay = 1000;
+  else if (Master <= 15)
+    autoPrint_delay = 1200;
+  else if (Master <= 20)
+    autoPrint_delay = 1400;
+  else if (Master <= 30)
+    autoPrint_delay = 1600;
+  else if (Master <= 40)
+    autoPrint_delay = 1800;
+  else if (Master <= 50)
+    autoPrint_delay = 2000;
+  else
+    autoPrint_delay = autoPrint_delay;
+  
+  if (millis() - currentTime >= autoPrint_delay && autoprtint_state == 0) {
     Serial.println("AUTOPRINT _ON_");
     currentTime = millis();
     digitalWrite(AUTOPRINT, HIGH);
-    currentState = 1;
+    autoprtint_state = 1;
   }
 }
 
@@ -339,15 +332,4 @@ void alert() {
     digitalWrite(BUZZER2, LOW);
     delay(100);
   }
-}
-
-void Restart() {
-  lcd.clear();
-  lcd.setCursor(5, 0);
-  lcd.print("ESP RESTART");
-  textEnd("DEV. BY", 7, 1);
-  textEnd("NATTAPON PONDONKO", 2, 2);
-
-  delay(1000);
-  ESP.restart();
 }

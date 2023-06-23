@@ -1,10 +1,8 @@
-#include <HTTPClient.h>
-#include <HTTPUpdate.h>
-#include <WiFiClientSecure.h>
 #include "cert.h"
 
+// set version
 String FirmwareVer = {
-  "1.1"
+  "1.0"
 };
 
 #define URL_fw_Version "https://raw.githubusercontent.com/Joker-PCL/ESP32_RS232_WeightCount/main/bin_version.txt"
@@ -12,8 +10,8 @@ String FirmwareVer = {
 
 unsigned long previousMillis = 0;  // will store last time LED was updated
 unsigned long previousMillis_2 = 0;
-const long interval = 60000;
-const long mini_interval = 1000;
+const long interval = 60000;  // update and send to cloud timer
+const long mini_interval = 1000; // delay timer
 
 struct Button {
   const uint8_t PIN;
@@ -32,6 +30,53 @@ Button button_boot = {
     s->numberKeyPresses += 1;
     s->pressed = true;
 }*/
+
+void sendToCloud() {
+  static bool flag = false;
+  struct tm timeinfo;
+
+  // Get current time
+  if (!getLocalTime(&timeinfo)) {
+    Serial.println("Failed to obtain time");
+    return;
+  }
+
+  strftime(timeStringBuff, sizeof(timeStringBuff), "%A, %B %d %Y %H:%M:%S", &timeinfo);
+  String asString(timeStringBuff);
+  asString.replace(" ", "-");
+  Serial.print("Time:");
+  Serial.println(asString);
+
+  // This will send the request to the server
+  String url = host + GOOGLE_SCRIPT_ID + "/exec?";
+  url += "machineID=" + String(machineID);
+  url += "&";
+  url += "amount=" + String(count);
+
+  Serial.print("POST data to spreadsheet:");
+  Serial.println(url);
+
+  HTTPClient http;
+  http.begin(url.c_str());
+  http.setFollowRedirects(HTTPC_STRICT_FOLLOW_REDIRECTS);
+
+  int httpCode = http.GET();
+  Serial.print("HTTP Status Code: ");
+  Serial.println(httpCode);
+
+  url = "";
+
+  //getting response from google sheet
+  if (httpCode == 200) {
+    String payload = http.getString();
+    Serial.println("Payload: " + payload);
+    count = 0;  // Reset count
+  } else {
+    Serial.println("Failed to connect to the server");
+  }
+
+  http.end();
+}
 
 void IRAM_ATTR isr() {
   button_boot.numberKeyPresses += 1;
@@ -119,6 +164,10 @@ void repeatedCall() {
     // save the last time you blinked the LED
     previousMillis = currentMillis;
     FirmwareVersionCheck();
+
+    if (count > 0) {
+      sendToCloud();
+    }
   }
 
   if ((currentMillis - previousMillis_2) >= mini_interval) {
@@ -152,7 +201,7 @@ void autoUpdate(void* val) {
   wifiMulti.addAP(ssid3, password);
   wifiMulti.addAP(ssid4, password);
   wifiMulti.addAP(ssid5, password);
-  
+
   Serial.println("Waiting for WiFi");
   while (wifiMulti.run() != WL_CONNECTED) {
     delay(1000);
@@ -163,6 +212,9 @@ void autoUpdate(void* val) {
   Serial.println("SSID: " + WiFi.SSID());
   Serial.println("IP address:");
   Serial.println(WiFi.localIP());
+
+  // Init and get the time
+  configTime(gmtOffset_sec, daylightOffset_sec, ntpServer);
   delay(1000);
 
   for (;;) {
@@ -170,11 +222,15 @@ void autoUpdate(void* val) {
     delay(200);
     digitalWrite(LED_BUILTIN, LOW);
     delay(200);
+
     if (button_boot.pressed) {  //to connect wifi via Android esp touch app
       Serial.println("Firmware update Starting..");
       firmwareUpdate("Reset");
       button_boot.pressed = false;
     }
-    repeatedCall();
+
+    if (wifiMulti.run() == WL_CONNECTED) {
+      repeatedCall();
+    }
   }
 }
