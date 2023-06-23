@@ -44,7 +44,7 @@ int autoprtint_state = 0; // relay autoprint state
 bool autoprtint = false;  // on-off autoprint
 
 int machineID_address = 0;  // machine address EEPROM
-unsigned long machineID = 143001;  // machine ID
+unsigned long machineID = 20104;  // machine ID
 
 int total_address = 10; // total address EEPROM
 unsigned int Total; // total

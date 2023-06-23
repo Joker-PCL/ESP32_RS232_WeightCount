@@ -2,7 +2,7 @@
 
 // set version
 String FirmwareVer = {
-  "1.0"
+  "1.1"
 };
 
 #define URL_fw_Version "https://raw.githubusercontent.com/Joker-PCL/ESP32_RS232_WeightCount/main/bin_version.txt"
@@ -218,10 +218,10 @@ void autoUpdate(void* val) {
   delay(1000);
 
   for (;;) {
-    digitalWrite(LED_BUILTIN, HIGH);
-    delay(200);
-    digitalWrite(LED_BUILTIN, LOW);
-    delay(200);
+    // digitalWrite(LED_BUILTIN, HIGH);
+    // delay(200);
+    // digitalWrite(LED_BUILTIN, LOW);
+    // delay(200);
 
     if (button_boot.pressed) {  //to connect wifi via Android esp touch app
       Serial.println("Firmware update Starting..");
