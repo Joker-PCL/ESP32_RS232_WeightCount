@@ -18,11 +18,11 @@ const char* ssid5 = "weight_table";
 const char* password = "plant172839";
 
 String FirmwareVer = {
-  "1.0"
+  "2.0"
 };
 
-#define URL_fw_Version "https://raw.githubusercontent.com/Joker-PCL/ESP32_RS232_WeightCount/main/bin_version.txt"
-#define URL_fw_Bin "https://raw.githubusercontent.com/Joker-PCL/ESP32_RS232_WeightCount/main/fw.bin"
+#define URL_fw_Version "https://raw.githubusercontent.com/Joker-PCL/ESP32_RS232_WeightCount/version2.0/bin_version.txt"
+#define URL_fw_Bin "https://raw.githubusercontent.com/Joker-PCL/ESP32_RS232_WeightCount/version2/fw.bin"
 
 // Google script ID and required credentials
 String host = "https://script.google.com/macros/s/";
@@ -42,26 +42,24 @@ const int btn_down = 35;
 const int btn_up = 36;
 const int btn_menu = 39;
 
-String readString; // cache serail port
-int Master;  // set master
-int currentWeight; // cache weight
+int btn_down_currentstate = 0;
+int btn_down_previousstate = 0;
 
 unsigned int currentTime = 0;  // time stamp millis()
 
-int autoprtint_state = 0; // relay autoprint state
-bool autoprtint = false;  // on-off autoprint
-
-int machineID_address = 0;  // machine address EEPROM
+int machineID_address = 0;        // machine address EEPROM
 unsigned long machineID = 20104;  // machine ID
 
-int total_address = 10; // total address EEPROM
-unsigned int Total = 0; // total
-unsigned int count = 0; // cache count
+int total_address = 10;  // total address EEPROM
+unsigned int Total = 0;  // total
+unsigned int count = 0;  // cache count
 
-unsigned long pressTime_menu = 0;
+const int master_number = 9;
+int MasterList[master_number] = { 3, 5, 8, 10, 25, 30, 35, 50, 100 };
+int Master;         // set master
+int currentWeight = 0;  // cache weight
+
 unsigned long pressTime_countReset = 0;
-unsigned int autoPrint_delay = 2500;  // sensorDelay ms.
-int sensor_type = 0;  // sensorType 0=nc,1=nc
 
 // Set the LCD address to 0x27 for a 16 chars and 2 line display
 LiquidCrystal_I2C lcd(0x27, 20, 4);

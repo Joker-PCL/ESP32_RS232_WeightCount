@@ -6,7 +6,9 @@
 
 unsigned long previousMillis = 0;  // will store last time LED was updated
 unsigned long previousMillis_2 = 0;
-const long interval = 60000;
+unsigned long previousMillis_3 = 0;
+const long interval_update = 900000;      // check up date 15 min
+const long interval_sendTocloud = 300000;  // send data 5 min
 const long mini_interval = 1000;
 
 struct Button {
@@ -160,36 +162,38 @@ int FirmwareVersionCheck(void) {
 
 void repeatedCall() {
   unsigned long currentMillis = millis();
-  if ((currentMillis - previousMillis) >= interval) {
+  if ((currentMillis - previousMillis) >= interval_update) {
     // save the last time you blinked the LED
     previousMillis = currentMillis;
-
-    if (count > 0)
-      sendToCloud();
 
     FirmwareVersionCheck();
   }
 
-  if ((currentMillis - previousMillis_2) >= mini_interval) {
+  if ((currentMillis - previousMillis_2) >= interval_sendTocloud && count > 0) {
     previousMillis_2 = currentMillis;
-    Serial.print("Check fw version in:");
-    Serial.print((interval - (currentMillis - previousMillis)) / 1000);
-    Serial.println("sec.");
-    Serial.print("Active fw version:");
-    Serial.println(FirmwareVer);
-    if (WiFi.status() == WL_CONNECTED) {
-      Serial.print("Wi-Fi Strength: ");
-      // Get RSSI value
-      int rssi = WiFi.RSSI();
-      if (rssi >= -50) {
-        Serial.println("Excellent");
-      } else if (rssi >= -70) {
-        Serial.println("Good");
-      } else {
-        Serial.println("Weak");
-      }
-    }
+    sendToCloud();
   }
+
+  // if ((currentMillis - previousMillis_3) >= mini_interval) {
+  //   previousMillis_3 = currentMillis;
+  //   Serial.print("Check fw version in:");
+  //   Serial.print((interval - (currentMillis - previousMillis)) / 1000);
+  //   Serial.println("sec.");
+  //   Serial.print("Active fw version:");
+  //   Serial.println(FirmwareVer);
+  //   if (WiFi.status() == WL_CONNECTED) {
+  //     Serial.print("Wi-Fi Strength: ");
+  //     // Get RSSI value
+  //     int rssi = WiFi.RSSI();
+  //     if (rssi >= -50) {
+  //       Serial.println("Excellent");
+  //     } else if (rssi >= -70) {
+  //       Serial.println("Good");
+  //     } else {
+  //       Serial.println("Weak");
+  //     }
+  //   }
+  // }
 }
 
 void autoUpdate(void* val) {
@@ -204,7 +208,7 @@ void autoUpdate(void* val) {
 
   Serial.println("Waiting for WiFi");
   while (wifiMulti.run() != WL_CONNECTED) {
-    delay(500);
+    delay(100);
     Serial.print(".");
   }
 
@@ -218,11 +222,11 @@ void autoUpdate(void* val) {
   delay(1000);
 
   for (;;) {
-    if (button_boot.pressed) {  //to connect wifi via Android esp touch app
-      Serial.println("Firmware update Starting..");
-      firmwareUpdate("Reset");
-      button_boot.pressed = false;
-    }
+    // if (button_boot.pressed) {  //to connect wifi via Android esp touch app
+    //   Serial.println("Firmware update Starting..");
+    //   firmwareUpdate("Reset");
+    //   button_boot.pressed = false;
+    // }
 
     while (wifiMulti.run() != WL_CONNECTED) {
       digitalWrite(LED_STATUS, HIGH);
