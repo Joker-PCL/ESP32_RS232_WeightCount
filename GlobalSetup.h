@@ -29,10 +29,10 @@ String host = "https://script.google.com/macros/s/";
 String GOOGLE_SCRIPT_ID = "AKfycbwPzTux1m1_9ESA7L0y_aIanjtEFkIZIeC8XhohXGwzAlfzjogOTG92L_W6e024Z7vO";  // change Gscript ID
 
 // INPUT AND OUTPUT
-const int SENSOR = 12;
+const int SENSOR = 34;
 const int LED_STATUS = 2;
-const int LED_RED = 25;
-const int LED_GREEN = 26;
+const int LED_GREEN = 25;
+const int LED_RED = 26;
 const int BUZZER1 = 4;
 const int BUZZER2 = 33;
 const int AUTOPRINT = 32;
@@ -42,13 +42,16 @@ const int btn_down = 35;
 const int btn_up = 36;
 const int btn_menu = 39;
 
+int btn_up_currentstate = 0;
+int btn_up_previousstate = 0;
+
 int btn_down_currentstate = 0;
 int btn_down_previousstate = 0;
 
 unsigned int currentTime = 0;  // time stamp millis()
 
 int machineID_address = 0;        // machine address EEPROM
-unsigned long machineID = 20104;  // machine ID
+unsigned long machineID = 20102;  // machine ID
 
 int total_address = 10;  // total address EEPROM
 unsigned int Total = 0;  // total

@@ -36,10 +36,10 @@ void setup() {
 
   EEPROM.begin(100);
 
-  // // ตั้งค่าสำหรับ upload program ครั้งแรก
-  // EEPROM.writeUInt(machineID_address, machineID);
-  // EEPROM.writeUInt(total_address, 0);
-  // EEPROM.commit();
+  // ตั้งค่าสำหรับ upload program ครั้งแรก
+  EEPROM.writeUInt(machineID_address, machineID);
+  EEPROM.writeUInt(total_address, 0);
+  EEPROM.commit();
 
   machineID = EEPROM.readUInt(machineID_address);
   Total = EEPROM.readUInt(total_address);
@@ -82,15 +82,15 @@ void setup() {
   attachInterrupt(button_boot.PIN, isr, RISING);
 
   // start program
-  xTaskCreatePinnedToCore(autoUpdate, "Task0", 100000, NULL, 9, &Task0, 0);
-  xTaskCreatePinnedToCore(mainLoop, "Task1", 30000, NULL, 10, &Task1, 1);
+  // xTaskCreatePinnedToCore(autoUpdate, "Task0", 100000, NULL, 10, &Task0, 0);
+  // xTaskCreatePinnedToCore(mainLoop, "Task1", 30000, NULL, 9, &Task1, 1);
 }
+
+// void loop() {
+// }
 
 void loop() {
-}
-
-void mainLoop(void* val) {
-  for (;;) {
+  // for (;;) {
     if (!Master) {
       lcd.clear();
       lcd.setCursor(1, 0);
@@ -103,7 +103,8 @@ void mainLoop(void* val) {
       lcd.setCursor(0, 2);
       lcd.print("PRIMARY : ");
       lcd.blink();
-      Master = setMaster();
+      // Master = setMaster();
+      Master = 50;
     } else {
       clearScreen(0);
       lcd.noBlink();
@@ -149,7 +150,7 @@ void mainLoop(void* val) {
         alert();
       }
     }
-  }
+  // }
 }
 
 int setMaster() {
@@ -163,7 +164,7 @@ int setMaster() {
     btn_down_currentstate = digitalRead(btn_down);
     if (btn_down_currentstate == 0 && btn_down_previousstate == 1) {
       digitalWrite(BUZZER2, HIGH);
-      delay(100);
+      delay(500);
       digitalWrite(BUZZER2, LOW);
       master_selected++;
       if (master_selected >= master_number) {
@@ -177,7 +178,22 @@ int setMaster() {
 
     btn_down_previousstate = btn_down_currentstate;
 
-    // Reset Couter
+    // btn_up_currentstate = digitalRead(btn_up);
+    // if (btn_up_currentstate == 0 && btn_up_previousstate == 1) {
+    //   Serial.println("<< Confirm >>");
+    //   clearScreen(3);
+    //   lcd.setCursor(3, 3);
+    //   lcd.print("<< CONFIRM >>");
+    //   digitalWrite(BUZZER2, HIGH);
+    //   delay(500);
+    //   digitalWrite(BUZZER2, LOW);
+    //   delay(1000);
+    //   return MasterList[master_selected];
+    // }
+
+    // btn_up_previousstate = btn_up_currentstate;
+
+    // Confirm
     if (!digitalRead(btn_up)) {
       delay(100);
       if (pressTime_countReset == 0) {
@@ -220,10 +236,10 @@ int readSerial() {
   PCS_TimerCheck = 0;
 
   while (true) {
-    if((millis() - passed_previousTime) > 500) {
+    if ((millis() - passed_previousTime) > 500) {
       digitalWrite(LED_GREEN, LOW);
     }
-        
+
     Sensor_CurrentState = digitalRead(SENSOR);
     if (Sensor_CurrentState == 0) {
       char incomingByte;
@@ -311,7 +327,7 @@ int readSerial() {
             PCS_TimerCheck = millis();  // บันทึกเวลาเริ่มต้นการกดค้าง
           }
 
-          if ((millis() - PCS_TimerCheck) > 300) {  // ตรวจสอบเวลาการกดค้าง
+          if ((millis() - PCS_TimerCheck) > 500) {  // ตรวจสอบเวลาการกดค้าง
             Sensor_PreviousState = false;           // เปลี่ยนสถานะการรับข้อมูล
             PCS_TimerCheck = 0;                     // รีเซ็ตเวลาเริ่มต้นการกดค้าง
             digitalWrite(BUZZER2, HIGH);

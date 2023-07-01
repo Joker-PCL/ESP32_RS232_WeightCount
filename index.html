@@ -33,12 +33,29 @@
         padding: 2rem 1.5rem;
         width: 650px;
         justify-content: center;
-        border: 1px solid rgb(120, 118, 118);
+        /* border: 1px solid rgb(120, 118, 118); */
         border-radius: 10px;
       }
 
-      .detail {
-        width: 100%;
+      .main-detail {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 20px;
+        width: 80%;
+      }
+
+      .main-detail li {
+        list-style-type: none;
+      }
+
+      .detail-box1 {
+        background-color: rgba(120, 118, 118, 0.2);
+        padding: 2rem 1.5rem;
+        border-radius: 10px;
+      }
+
+      .detail-box2 {
+        padding: 0 1.5rem;
       }
 
       .machine-list li.machine-active {
@@ -65,7 +82,7 @@
   <body>
     <nav class="navbar navbar-dark bg-primary p-1 fixed-top">
       <div class="container-fluid">
-        <a class="navbar-brand fs-3 text-white text-center"
+        <a class="navbar-brand fs-4 text-white text-center"
           >IOT เครื่องนับแผงยา</a
         >
         <button
@@ -112,30 +129,28 @@
       </div>
     </nav>
 
-    <div class="mt-5 pt-5">
+    <div class="mt-5 pt-2 container-xxl main-container">
       <div
-        class="mx-5 my-3 py-1 fs-4 bg-success rounded text-center text-white"
+        class="machine-name mx-5 my-3 py-1 fs-4 bg-success rounded text-center text-white"
       >
         เครื่อง Strip2
       </div>
       <div id="main" style="width: 100%; height: 400px"></div>
-      <div class="d-flex justify-content-center">
-        <div
-          class="mx-3 my-3 py-2 px-5 fs-6 bg-secondary rounded text-center text-white"
-        >
-          ข้อมูลล่าสุด 22/06/2023, 23:42:45
-        </div>
-      </div>
       <div class="container d-flex justify-content-center">
-        <div class="main-detail d-grid gap-3">
-          <div class="detail text-center pb-2">
+        <div class="main-detail">
+          <div class="detail detail-box1 text-center">
             <div>
               <p class="lead">จำนวนชิ้นงานทั้งหมด</p>
               <h3 class="display-4">4,704 กล่อง</h3>
               <p class="lead">จากเป้า 10,000 กล่อง</p>
             </div>
           </div>
-          <div class="detail">
+          <div class="detail-box2">
+            <div
+              class="fs-6 mb-2 p-1 bg-secondary rounded text-center text-white"
+            >
+              ข้อมูลล่าสุด 22/06/2023, 23:42:45
+            </div>
             <li>ชื่อยา AMCO</li>
             <li>เลขที่ผลิต: 10540</li>
             <li>เวลาผ่านไปแล้วในกะนี้: 00 ชั่วโมง 13 นาที</li>
@@ -214,7 +229,7 @@
             type: "value",
             name: "จำนวน",
             min: 0,
-            max: Math.max(...data) + 50,
+            max: Math.max(...data) + 20,
           },
           {
             type: "value",
@@ -263,6 +278,11 @@
             data: dataB,
           },
         ],
+
+        animationDuration: 2000,
+        animationDurationUpdate: 500,
+        animationEasing: "linear",
+        animationEasingUpdate: "linear",
       };
 
       // Display the chart using the configuration items and data just specified.
@@ -277,21 +297,79 @@
       const offcanvasEl = new bootstrap.Offcanvas("#offcanvasNavbar");
       const listItems = document.querySelectorAll("li");
       let machineName;
-      listItems.forEach((item) => {
-        item.addEventListener("click", () => {
-          offcanvasEl.hide();
-          event_machineName = item.getAttribute("data-machineName");
-          if (event_machineName != machineName) {
-            machineName = item.getAttribute("data-machineName");
-            console.log(machineName);
-          }
 
-          listItems.forEach((li) => {
-            li.classList.remove("machine-active");
+      let new_xAxis = ["20/07/2003", "20/07/2003", "20/07/2003", "20/07/2003"];
+      let new_seriesBar = [];
+      let new_seriesLine = [];
+
+      function run() {
+        listItems.forEach((item) => {
+          // item.addEventListener("click", () => {
+            new_seriesBar = [];
+            new_seriesLine = [];
+            offcanvasEl.hide();
+            event_machineName = item.getAttribute("data-machineName");
+            if (event_machineName != machineName) {
+              machineName = item.getAttribute("data-machineName");
+              document.querySelector(".machine-name").innerHTML =
+                "เครื่อง " + machineName;
+
+              // random
+              for (var i = 0; i < data.length; ++i) {
+                data[i] = Math.round(Math.random() * 20);
+                new_seriesBar.push(data[i]);
+              }
+
+              sum = 0;
+              for (let i = 0; i < data.length; i++) {
+                sum += data[i];
+                new_seriesLine.push(sum);
+              }
+
+              myChart.setOption({
+                xAxis: [
+                  {
+                    data: name,
+                  },
+                ],
+                yAxis: [
+                  {
+                    name: "จำนวน",
+                    max: Math.max(...new_seriesBar) + 10,
+                  },
+                  {
+                    name: "จำนวนสะสม",
+                    max: Math.max(...new_seriesLine),
+                  },
+                ],
+                series: [
+                  {
+                    type: "bar",
+                    data: new_seriesBar,
+                  },
+                  {
+                    type: "line",
+                    data: new_seriesLine,
+                  },
+                ],
+              });
+              console.log(machineName);
+            }
+
+            listItems.forEach((li) => {
+              li.classList.remove("machine-active");
+            });
+            item.classList.add("machine-active");
           });
-          item.classList.add("machine-active");
-        });
-      });
+        // });
+      }
+
+      // setTimeout(function () {
+      //   run();
+      // }, 0);
+      setInterval(function () {
+        run();
+      }, 3000);
     </script>
   </body>
 </html>
