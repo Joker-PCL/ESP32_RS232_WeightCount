@@ -39,9 +39,9 @@ void setup() {
   EEPROM.begin(100);
 
   // ตั้งค่าสำหรับ upload program ครั้งแรก
-  EEPROM.writeUInt(machineID_address, machineID);
-  EEPROM.writeUInt(total_address, 0);
-  EEPROM.commit();
+  // EEPROM.writeUInt(machineID_address, machineID);
+  // EEPROM.writeUInt(total_address, 0);
+  // EEPROM.commit();
 
   machineID = EEPROM.readUInt(machineID_address);
   Total = EEPROM.readUInt(total_address);
@@ -276,6 +276,19 @@ int readSerial() {
       digitalWrite(LED_GREEN, LOW);
     }
 
+    // update screen
+    if (total_update) {
+      lcd.noBlink();
+      String Total_SCR = "TOTAL: " + String(Total) + " PCS";
+      while (Total_SCR.length() < 20) Total_SCR += " ";
+
+      lcd.setCursor(0, 1);
+      lcd.print(Total_SCR);
+      total_update = false;
+      lcd.setCursor(10, 3);
+      lcd.blink();
+    }
+
     Sensor_CurrentState = digitalRead(SENSOR);
     if (Sensor_CurrentState == 1) {
       char incomingByte;
@@ -293,19 +306,6 @@ int readSerial() {
           readString = receivedData;
           dataIndex = 0;  // เริ่มต้นดัชนีใหม่สำหรับอาร์เรย์ receivedData
         }
-      }
-
-      // update screen
-      if (total_update) {
-        lcd.noBlink();
-        String Total_SCR = "TOTAL: " + String(Total) + " PCS";
-        while (Total_SCR.length() < 20) Total_SCR += " ";
-
-        lcd.setCursor(0, 1);
-        lcd.print(Total_SCR);
-        total_update = false;
-        lcd.setCursor(10, 3);
-        lcd.blink();
       }
 
       // check pcs
