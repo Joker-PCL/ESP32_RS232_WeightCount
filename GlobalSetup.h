@@ -7,6 +7,7 @@ char timeStringBuff[50];  //50 chars should be enough
 //  multitask
 TaskHandle_t Task0;
 TaskHandle_t Task1;
+TaskHandle_t Task2;
 
 WiFiMulti wifiMulti;
 
@@ -22,7 +23,7 @@ String FirmwareVer = {
 };
 
 #define URL_fw_Version "https://raw.githubusercontent.com/Joker-PCL/ESP32_RS232_WeightCount/version2.0/bin_version.txt"
-#define URL_fw_Bin "https://raw.githubusercontent.com/Joker-PCL/ESP32_RS232_WeightCount/version2/fw.bin"
+#define URL_fw_Bin "https://raw.githubusercontent.com/Joker-PCL/ESP32_RS232_WeightCount/version2.0/fw.bin"
 
 // Google script ID and required credentials
 String host = "https://script.google.com/macros/s/";
@@ -31,22 +32,18 @@ String GOOGLE_SCRIPT_ID = "AKfycbwPzTux1m1_9ESA7L0y_aIanjtEFkIZIeC8XhohXGwzAlfzj
 // INPUT AND OUTPUT
 const int SENSOR = 34;
 const int LED_STATUS = 2;
-const int LED_GREEN = 25;
-const int LED_RED = 26;
-const int BUZZER1 = 4;
-const int BUZZER2 = 33;
-const int AUTOPRINT = 32;
+const int LED_RED = 25;
+const int LED_GREEN = 26;
+const int BUZZER = 33;
 
-const int btn_exit = 34;
-const int btn_down = 35;
-const int btn_up = 36;
-const int btn_menu = 39;
+const int btn_select = 12;
+const int btn_confirm = 13;
 
-int btn_up_currentstate = 0;
-int btn_up_previousstate = 0;
+int btn_select_currentstate = 0;
+int btn_select_previousstate = 0;
 
-int btn_down_currentstate = 0;
-int btn_down_previousstate = 0;
+int btn_confirm_currentstate = 0;
+int btn_confirm_previousstate = 0;
 
 unsigned int currentTime = 0;  // time stamp millis()
 

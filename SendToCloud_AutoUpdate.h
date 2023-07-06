@@ -7,7 +7,7 @@
 unsigned long previousMillis = 0;  // will store last time LED was updated
 unsigned long previousMillis_2 = 0;
 unsigned long previousMillis_3 = 0;
-const long interval_update = 900000;      // check up date 15 min
+const long interval_update = 900000;       // check up date 15 min
 const long interval_sendTocloud = 300000;  // send data 5 min
 const long mini_interval = 1000;
 
@@ -80,7 +80,6 @@ void sendToCloud() {
   delay(2000);
 }
 
-
 void IRAM_ATTR isr() {
   button_boot.numberKeyPresses += 1;
   button_boot.pressed = true;
@@ -88,6 +87,7 @@ void IRAM_ATTR isr() {
 
 void firmwareUpdate(String version) {
   vTaskDelete(Task1);
+  vTaskDelete(Task2);
   lcd.clear();
   textEnd("UPDATE FIRMWERE", 2, 0);
   textEnd("VERSION " + version, 4, 1);
@@ -109,6 +109,10 @@ void firmwareUpdate(String version) {
       Serial.println("HTTP_UPDATE_OK");
       break;
   }
+
+  textEnd("ERROR RESTART...", 2, 3);
+  delay(500);
+  ESP.restart();
 }
 
 int FirmwareVersionCheck(void) {
@@ -222,11 +226,11 @@ void autoUpdate(void* val) {
   delay(1000);
 
   for (;;) {
-    // if (button_boot.pressed) {  //to connect wifi via Android esp touch app
-    //   Serial.println("Firmware update Starting..");
-    //   firmwareUpdate("Reset");
-    //   button_boot.pressed = false;
-    // }
+    if (button_boot.pressed) {  //to connect wifi via Android esp touch app
+      Serial.println("Firmware update Starting..");
+      firmwareUpdate("<2>");
+      button_boot.pressed = false;
+    }
 
     while (wifiMulti.run() != WL_CONNECTED) {
       digitalWrite(LED_STATUS, HIGH);

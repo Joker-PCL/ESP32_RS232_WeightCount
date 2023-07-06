@@ -13,6 +13,8 @@
 
 unsigned long passed_previousTime = 0;
 
+bool total_update = false;
+
 void setup() {
   // initialize the LCD
   lcd.begin();
@@ -47,21 +49,17 @@ void setup() {
   Serial.println("machineID: " + String(machineID));
   Serial.println("Total: " + String(Total));
 
-  pinMode(btn_menu, INPUT_PULLUP);
-  pinMode(btn_down, INPUT_PULLUP);
-  pinMode(btn_up, INPUT_PULLUP);
-  pinMode(btn_exit, INPUT_PULLUP);
+  pinMode(btn_select, INPUT_PULLUP);
+  pinMode(btn_confirm, INPUT_PULLUP);
 
   pinMode(SENSOR, INPUT_PULLUP);
   pinMode(LED_STATUS, OUTPUT);
   pinMode(LED_RED, OUTPUT);
   pinMode(LED_GREEN, OUTPUT);
-  pinMode(BUZZER1, OUTPUT);
-  pinMode(BUZZER2, OUTPUT);
-  pinMode(AUTOPRINT, OUTPUT);
+  pinMode(BUZZER, OUTPUT);
 
-  const int test_output[5] = { BUZZER1, BUZZER2, LED_RED, LED_GREEN, AUTOPRINT };
-  for (int i = 0; i < 5; i++) {
+  const int test_output[3] = { BUZZER, LED_RED, LED_GREEN };
+  for (int i = 0; i < 3; i++) {
     digitalWrite(test_output[i], HIGH);
     delay(200);
     digitalWrite(test_output[i], LOW);
@@ -74,6 +72,10 @@ void setup() {
   onLoad();
   textEnd("          ", 5, 0);
   textEnd("POLIPHARM CO,LTD", 2, 0);
+  textEnd("VERSION " + String(FirmwareVer), 4, 1);
+  delay(500);
+  clearScreen(1);
+  textEnd("ID " + String(machineID), 5, 1);
   delay(500);
   clearScreen(0);
 
@@ -82,29 +84,76 @@ void setup() {
   attachInterrupt(button_boot.PIN, isr, RISING);
 
   // start program
-  // xTaskCreatePinnedToCore(autoUpdate, "Task0", 100000, NULL, 10, &Task0, 0);
-  // xTaskCreatePinnedToCore(mainLoop, "Task1", 30000, NULL, 9, &Task1, 1);
+  xTaskCreatePinnedToCore(autoUpdate, "Task0", 100000, NULL, 10, &Task0, 0);
+  xTaskCreatePinnedToCore(readButton, "Task1", 5000, NULL, 9, &Task1, 0);
+  xTaskCreatePinnedToCore(mainLoop, "Task2", 20000, NULL, 8, &Task2, 1);
 }
 
-// void loop() {
-// }
+void loop() {}
 
-void loop() {
-  // for (;;) {
+void readButton(void *val) {
+  for (;;) {
+    if (Master) {
+      // total -1
+      btn_confirm_currentstate = digitalRead(btn_confirm);
+      if (btn_confirm_currentstate == 0 && btn_confirm_previousstate == 1 && Total > 0) {
+        delay(100);
+        Total -= 1;
+        EEPROM.writeUInt(total_address, Total);
+        EEPROM.commit();
+        Serial.println("TOTAL: " + String(Total) + " PCS");
+        digitalWrite(BUZZER, HIGH);
+        delay(100);
+        digitalWrite(BUZZER, LOW);
+        total_update = true;
+
+        if (count > 0)
+          count--;
+      }
+
+      btn_confirm_previousstate = btn_confirm_currentstate;
+
+      // Reset Couter
+      if (!digitalRead(btn_select) && Total > 0) {
+        delay(100);
+        if (pressTime_countReset == 0) {
+          pressTime_countReset = millis();  // บันทึกเวลาเริ่มต้นการกดค้าง
+        }
+        if ((millis() - pressTime_countReset) > 2000) {  // ตรวจสอบเวลาการกดค้าง
+          Serial.println("Reset Counter>>");
+          Total = 0;
+          EEPROM.writeUInt(total_address, Total);
+          EEPROM.commit();
+          digitalWrite(BUZZER, HIGH);
+          delay(100);
+          digitalWrite(BUZZER, LOW);
+          pressTime_countReset = 0;  // รีเซ็ตเวลาเริ่มต้นการกดค้าง
+          total_update = true;
+        }
+      } else {
+        pressTime_countReset = 0;  // รีเซ็ตเวลาเริ่มต้นการกดค้าง
+      }
+    }
+
+    delay(100);
+  }
+}
+
+void mainLoop(void *val) {
+  for (;;) {
     if (!Master) {
       lcd.clear();
       lcd.setCursor(1, 0);
       lcd.print("SET PRIMARY VALUE");
-      lcd.setCursor(1, 3);
+      lcd.setCursor(10, 3);
       lcd.print("<CONFIRM>");
-      lcd.setCursor(13, 3);
+      lcd.setCursor(1, 3);
       lcd.print("<NEXT>");
 
       lcd.setCursor(0, 2);
       lcd.print("PRIMARY : ");
       lcd.blink();
-      // Master = setMaster();
-      Master = 50;
+      Master = setMaster();
     } else {
       clearScreen(0);
       lcd.noBlink();
@@ -150,7 +199,7 @@ void loop() {
         alert();
       }
     }
-  // }
+  }
 }
 
 int setMaster() {
@@ -161,11 +210,12 @@ int setMaster() {
 
   while (Master <= 0) {
     // total -1
-    btn_down_currentstate = digitalRead(btn_down);
-    if (btn_down_currentstate == 0 && btn_down_previousstate == 1) {
-      digitalWrite(BUZZER2, HIGH);
-      delay(500);
-      digitalWrite(BUZZER2, LOW);
+    btn_select_currentstate = digitalRead(btn_select);
+    if (btn_select_currentstate == 0 && btn_select_previousstate == 1) {
+      digitalWrite(BUZZER, HIGH);
+      delay(100);
+      digitalWrite(BUZZER, LOW);
+      delay(100);
       master_selected++;
       if (master_selected >= master_number) {
         master_selected = 0;
@@ -173,40 +223,26 @@ int setMaster() {
 
       Serial.println("PRIMARY:" + String(MasterList[master_selected]) + " PCS");
       lcd.setCursor(10, 2);
-      lcd.print(String(MasterList[master_selected]) + " PCS ");
+      lcd.print(String(MasterList[master_selected]) + " PCS  ");
     }
 
-    btn_down_previousstate = btn_down_currentstate;
-
-    // btn_up_currentstate = digitalRead(btn_up);
-    // if (btn_up_currentstate == 0 && btn_up_previousstate == 1) {
-    //   Serial.println("<< Confirm >>");
-    //   clearScreen(3);
-    //   lcd.setCursor(3, 3);
-    //   lcd.print("<< CONFIRM >>");
-    //   digitalWrite(BUZZER2, HIGH);
-    //   delay(500);
-    //   digitalWrite(BUZZER2, LOW);
-    //   delay(1000);
-    //   return MasterList[master_selected];
-    // }
-
-    // btn_up_previousstate = btn_up_currentstate;
+    btn_select_previousstate = btn_select_currentstate;
 
     // Confirm
-    if (!digitalRead(btn_up)) {
+    if (!digitalRead(btn_confirm)) {
       delay(100);
       if (pressTime_countReset == 0) {
         pressTime_countReset = millis();  // บันทึกเวลาเริ่มต้นการกดค้าง
       }
       if ((millis() - pressTime_countReset) > 2000) {  // ตรวจสอบเวลาการกดค้าง
+        lcd.noBlink();
         Serial.println("<< Confirm >>");
         clearScreen(3);
         lcd.setCursor(3, 3);
         lcd.print("<< CONFIRM >>");
-        digitalWrite(BUZZER2, HIGH);
+        digitalWrite(BUZZER, HIGH);
         delay(500);
-        digitalWrite(BUZZER2, LOW);
+        digitalWrite(BUZZER, LOW);
         delay(1000);
         pressTime_countReset = 0;  // รีเซ็ตเวลาเริ่มต้นการกดค้าง
 
@@ -229,7 +265,7 @@ bool Sensor_PreviousState = true;
 
 int readSerial() {
   Serial.println("ReadSerialPort>>");
-  // Serial2.flush();
+  Serial2.flush();
 
   PCS = 0;
   PCS_Cache = 0;
@@ -241,83 +277,39 @@ int readSerial() {
     }
 
     Sensor_CurrentState = digitalRead(SENSOR);
-    if (Sensor_CurrentState == 0) {
+    if (Sensor_CurrentState == 1) {
       char incomingByte;
       static char receivedData[10];  // อาร์เรย์เก็บข้อมูลที่อ่านได้
       static int dataIndex = 0;      // ดัชนีของอาร์เรย์ receivedData
 
-      while (readString.length() <= 0) {
-        //  check Serial Data cache
-        if (Serial2.available() > 0) {
-          incomingByte = Serial2.read();             // อ่านค่าที่ส่งมาจาก RS232
-          if (incomingByte != '\n') {                // เมื่อไม่พบตัวขึ้นบรรทัดใหม่
-            receivedData[dataIndex] = incomingByte;  // เก็บค่าที่อ่านได้ในอาร์เรย์
-            dataIndex++;
-          } else {                           // เมื่อพบตัวขึ้นบรรทัดใหม่
-            receivedData[dataIndex] = '\0';  // ตั้งค่าตัวสิ้นสุดสตริง
-            readString = receivedData;
-            dataIndex = 0;  // เริ่มต้นดัชนีใหม่สำหรับอาร์เรย์ receivedData
-          }
+      //  check Serial Data cache
+      if (Serial2.available() > 0 && Sensor_PreviousState == true) {
+        incomingByte = Serial2.read();             // อ่านค่าที่ส่งมาจาก RS232
+        if (incomingByte != '\n') {                // เมื่อไม่พบตัวขึ้นบรรทัดใหม่
+          receivedData[dataIndex] = incomingByte;  // เก็บค่าที่อ่านได้ในอาร์เรย์
+          dataIndex++;
+        } else {                           // เมื่อพบตัวขึ้นบรรทัดใหม่
+          receivedData[dataIndex] = '\0';  // ตั้งค่าตัวสิ้นสุดสตริง
+          readString = receivedData;
+          dataIndex = 0;  // เริ่มต้นดัชนีใหม่สำหรับอาร์เรย์ receivedData
         }
-      }
-
-      bool total_update = false;
-
-      lcd.setCursor(10, 3);
-      lcd.blink();
-
-      // total -1
-      btn_down_currentstate = digitalRead(btn_down);
-      if (btn_down_currentstate == 0 && btn_down_previousstate == 1 && Total > 0) {
-        Total -= 1;
-        EEPROM.writeUInt(total_address, Total);
-        EEPROM.commit();
-        Serial.println("TOTAL: " + String(Total) + " PCS");
-        digitalWrite(BUZZER2, HIGH);
-        delay(100);
-        digitalWrite(BUZZER2, LOW);
-        total_update = true;
-
-        if (count > 0)
-          count--;
-      }
-
-      btn_down_previousstate = btn_down_currentstate;
-
-      // Reset Couter
-      if (!digitalRead(btn_up) && Total > 0) {
-        delay(100);
-        if (pressTime_countReset == 0) {
-          pressTime_countReset = millis();  // บันทึกเวลาเริ่มต้นการกดค้าง
-        }
-        if ((millis() - pressTime_countReset) > 2000) {  // ตรวจสอบเวลาการกดค้าง
-          Serial.println("Reset Counter>>");
-          Total = 0;
-          EEPROM.writeUInt(total_address, Total);
-          EEPROM.commit();
-          digitalWrite(BUZZER2, HIGH);
-          delay(100);
-          digitalWrite(BUZZER2, LOW);
-          pressTime_countReset = 0;  // รีเซ็ตเวลาเริ่มต้นการกดค้าง
-          total_update = true;
-        }
-      } else {
-        pressTime_countReset = 0;  // รีเซ็ตเวลาเริ่มต้นการกดค้าง
       }
 
       // update screen
       if (total_update) {
+        lcd.noBlink();
         String Total_SCR = "TOTAL: " + String(Total) + " PCS";
-        for (int i = 0; i < 20 - Total_SCR.length(); i++)
-          Total_SCR += " ";
+        while (Total_SCR.length() < 20) Total_SCR += " ";
 
         lcd.setCursor(0, 1);
         lcd.print(Total_SCR);
         total_update = false;
+        lcd.setCursor(10, 3);
+        lcd.blink();
       }
 
       // check pcs
-      if (readString.length() > 0 && Sensor_PreviousState) {
+      if (readString.length() > 0 && Sensor_PreviousState == true) {
         readString.replace("+", "");
         readString.replace("pcs", "");
         int current_pcs = readString.toInt();
@@ -330,9 +322,10 @@ int readSerial() {
           if ((millis() - PCS_TimerCheck) > 500) {  // ตรวจสอบเวลาการกดค้าง
             Sensor_PreviousState = false;           // เปลี่ยนสถานะการรับข้อมูล
             PCS_TimerCheck = 0;                     // รีเซ็ตเวลาเริ่มต้นการกดค้าง
-            digitalWrite(BUZZER2, HIGH);
+            readString = "";
+            digitalWrite(BUZZER, HIGH);
             delay(100);
-            digitalWrite(BUZZER2, LOW);
+            digitalWrite(BUZZER, LOW);
             delay(100);
             return current_pcs;
           }
@@ -349,6 +342,7 @@ int readSerial() {
     } else {
       Sensor_PreviousState = true;  // เปลี่ยนสถานะการรับข้อมูล
       delay(100);
+      Serial2.flush();
     }
   }
 }
@@ -399,12 +393,12 @@ void onLoad() {
 void alert() {
   for (int i = 0; i < 10; i++) {
     digitalWrite(LED_RED, HIGH);
-    digitalWrite(BUZZER2, HIGH);
+    digitalWrite(BUZZER, HIGH);
     lcd.noBacklight();
     delay(100);
     lcd.backlight();
     digitalWrite(LED_RED, LOW);
-    digitalWrite(BUZZER2, LOW);
+    digitalWrite(BUZZER, LOW);
     delay(100);
   }
 }
