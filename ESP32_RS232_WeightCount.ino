@@ -316,12 +316,12 @@ int readSerial() {
 
         if (readString.indexOf("-") && PCS_Cache == current_pcs && current_pcs > 0) {
           if (PCS_TimerCheck == 0) {
-            PCS_TimerCheck = millis();  // บันทึกเวลาเริ่มต้นการกดค้าง
+            PCS_TimerCheck = millis();  // บันทึกเวลาเริ่มต้นการวาง
           }
 
           if ((millis() - PCS_TimerCheck) > 500) {  // ตรวจสอบเวลาการกดค้าง
             Sensor_PreviousState = false;           // เปลี่ยนสถานะการรับข้อมูล
-            PCS_TimerCheck = 0;                     // รีเซ็ตเวลาเริ่มต้นการกดค้าง
+            PCS_TimerCheck = 0;                     // รีเซ็ตเวลาเริ่มต้นการวาง
             readString = "";
             digitalWrite(BUZZER, HIGH);
             delay(100);
@@ -331,7 +331,7 @@ int readSerial() {
           }
         } else {
           PCS_Cache = current_pcs;  // รีเซ็ตค่าน้ำหนักที่นำมาเปรียบเทียบ
-          PCS_TimerCheck = 0;       // รีเซ็ตเวลาเริ่มต้นการกดค้าง
+          PCS_TimerCheck = 0;       // รีเซ็ตเวลาเริ่มต้นการวาง
         }
 
         readString = "";
@@ -340,6 +340,8 @@ int readSerial() {
         Serial.println(current_pcs);  // พิมพ์สตริงที่แปลงจากค่าที่อ่านได้
       }
     } else {
+      readString = "";
+      PCS_TimerCheck = 0;       // รีเซ็ตเวลาเริ่มต้นการวาง
       Sensor_PreviousState = true;  // เปลี่ยนสถานะการรับข้อมูล
       delay(100);
       Serial2.flush();
