@@ -79,7 +79,7 @@
       }
 
       #summary_container {
-        width: 100%;
+        /* width: 100vw; */
         display: none;
       }
     </style>
@@ -140,7 +140,7 @@
           class="mx-5 my-3 py-1 fs-4 bg-success rounded text-center text-white"
           id="machine_name"
         >
-          เครื่อง Strip2
+          เครื่อง xxxxx
         </div>
 
         <div id="main_chart" style="width: 100%; height: 400px"></div>
@@ -150,8 +150,8 @@
             <div class="detail detail-box1 text-center">
               <div>
                 <p>จำนวนชิ้นงานทั้งหมด</p>
-                <h1 id="total">4,704 กล่อง</h1>
-                <p id="batch_size">จากเป้า 10,000 กล่อง</p>
+                <h1 id="total">x,xxx กล่อง</h1>
+                <p id="batch_size">จากเป้า x,xxx กล่อง</p>
               </div>
             </div>
             <div class="detail-box2">
@@ -159,17 +159,22 @@
                 class="fs-6 mb-2 p-1 bg-secondary rounded text-center text-white"
                 id="latest_information"
               >
-                ข้อมูลล่าสุด 22/06/2023, 23:42:45
+                ข้อมูลล่าสุด dd/mm/yyyy, hh:mm:ss
               </div>
-              <li id="product_name">ชื่อยา AMCO</li>
-              <li id="lot">เลขที่ผลิต: 10540</li>
-              <li id="period_time">
-                เวลาผ่านไปแล้วในกะนี้: 00 ชั่วโมง 13 นาที
-              </li>
-              <li id="time_finish">
-                คลาดว่าจะเสร็จในอีก (โดยประมาณ): 05 ชั่วโมง 13 นาที
-              </li>
-              <li id="average">เฉลี่ย 50 กล่อง ต่อ นาที</li>
+              <div class="mt-3 px-4">
+                <li id="product_name">ชื่อยา XXXX</li>
+                <li id="lot">เลขที่ผลิต: xxxxx</li>
+                <li id="period_time">
+                  เวลาผ่านไปแล้วในกะนี้: hh ชั่วโมง mm นาที
+                </li>
+                <li id="average">เฉลี่ย xx กล่อง ต่อ นาที</li>
+              </div>
+              <div
+                class="fs-6 mt-4 p-1 bg-secondary rounded text-center text-white"
+                id="time_finish"
+              >
+                จะเสร็จในอีก (โดยประมาณ): hh ชั่วโมง mm นาที
+              </div>
             </div>
           </div>
         </div>
@@ -177,13 +182,23 @@
     </div>
 
     <div id="summary_container">
-      <div id="summary_chart" style="width: 100%; height: 90vh"></div>
+      <div id="summary_chart" style="width: 100vw; height: 90vh"></div>
     </div>
 
     <script>
+      const machine_canvasEl = new bootstrap.Offcanvas("#machine_canvas");
+      const main_container = document.getElementById("main_container");
+      const main_chart = echarts.init(document.getElementById("main_chart"));
+      const summary_container = document.getElementById("summary_container");
+      const summary_chart = echarts.init(document.getElementById("summary_chart"));
+
+      window.addEventListener('load', function() {
+
+      });
       let dataObj = [
         {
           machineName: "Strip4",
+          batch_size: 9800,
           dataArr: [
             ["26/06/2023, 10:35:58", "31043", "FURIDE 500", "16"],
             ["26/06/2023, 10:40:58", "31043", "FURIDE 500", "18"],
@@ -209,6 +224,7 @@
         },
         {
           machineName: "Blister3",
+          batch_size: 1750,
           dataArr: [
             ["27/06/2023, 15:58:24", "31128", "PAINDOL", "27"],
             ["27/06/2023, 16:03:24", "31128", "PAINDOL", "10"],
@@ -351,13 +367,37 @@
           ],
         },
       ];
+
+      let dataObj2 =
+        [{
+          machineName: "Strip6",
+          batch_size: 7800,
+          dataArr: [
+            ["26/06/2023, 10:35:58", "31043", "FURIDE 500", "16"],
+            ["26/06/2023, 10:40:58", "31043", "FURIDE 500", "18"],
+            ["26/06/2023, 10:44:48", "31043", "FURIDE 500", "1"],
+            ["26/06/2023, 10:51:14", "31043", "FURIDE 500", "8"],
+            ["26/06/2023, 10:56:14", "31043", "FURIDE 500", "3"],
+            ["26/06/2023, 11:01:16", "31043", "FURIDE 500", "4"],
+            ["26/06/2023, 13:05:48", "31043", "FURIDE 500", "38"],
+            ["26/06/2023, 13:10:48", "31043", "FURIDE 500", "29"],
+            ["26/06/2023, 13:18:33", "31043", "FURIDE 500", "30"],
+            ["26/06/2023, 13:32:02", "31043", "FURIDE 500", "1"],
+            ["26/06/2023, 13:42:04", "31043", "FURIDE 500", "24"],
+            ["26/06/2023, 13:49:54", "31043", "FURIDE 500", "24"],
+            ["26/06/2023, 13:58:40", "31043", "FURIDE 500", "1"],
+            ["26/06/2023, 14:03:40", "31043", "FURIDE 500", "18"],
+            ["26/06/2023, 14:10:51", "31043", "FURIDE 500", "18"],
+            ["26/06/2023, 14:35:21", "31043", "FURIDE 500", "1"],
+            ["26/06/2023, 14:40:22", "31043", "FURIDE 500", "36"],
+            ["26/06/2023, 14:45:22", "31043", "FURIDE 500", "4"],
+            ["26/06/2023, 14:54:03", "31043", "FURIDE 500", "65"],
+            ["26/06/2023, 19:15:41", "31043", "FURIDE 500", "10"],
+          ],
+        }];
     </script>
 
     <script type="text/javascript">
-      // Initialize the echarts instance based on the prepared dom
-      let main_chart = echarts.init(document.getElementById("main_chart"));
-
-      // Specify the configuration items and data for the chart
       let option = {
         dataZoom: [
           {
@@ -371,22 +411,6 @@
             crossStyle: {
               color: "#999",
             },
-          },
-        },
-        toolbox: {
-          feature: {
-            dataView: { show: true, readOnly: false },
-            magicType: { show: true, type: ["line", "bar"] },
-            restore: { show: true },
-            saveAsImage: { show: true },
-          },
-          width: "100%",
-          left: "75%",
-        },
-        legend: {
-          data: ["Precipitation", "Temperature"],
-          textStyle: {
-            fontFamily: "Kanit",
           },
         },
         xAxis: [
@@ -451,35 +475,91 @@
         animationEasingUpdate: "linear",
       };
 
-      // Display the chart using the configuration items and data just specified.
       main_chart.setOption(option);
+
+      let summary_option = {
+        visualMap: {
+          orient: "horizontal",
+          left: "center",
+          min: 0,
+          max: 100,
+          text: ["100", "0"],
+          dimension: 0,
+          inRange: {
+            color: ["#FD665F", "#FFCE34", "#65B581"],
+          },
+        },
+        grid: { containLabel: true },
+        xAxis: {
+          name: "เปอร์เซ็นต์",
+          min: 0,
+          max: 100,
+        },
+        yAxis: {
+          type: "category",
+        },
+        series: [
+          {
+            type: "bar",
+            label: {
+              show: true,
+              position: "right",
+              fontSize: 16,
+              formatter: "ผลิตไปแล้ว \n {c|{c}} %",
+              backgroundColor: "rgb(242,242,242)",
+              borderColor: "#aaa",
+              borderWidth: 1,
+              borderRadius: 4,
+              padding: [5, 10],
+              lineHeight: 20,
+              rich: {
+                c: {
+                  align: "center",
+                  color: "#ff8811",
+                  textBorderColor: "#000",
+                  textBorderWidth: 1,
+                  fontSize: 16,
+                },
+              },
+            },
+          },
+        ],
+        legend: {
+          show: true,
+        },
+
+        animationDuration: 2000,
+        animationDurationUpdate: 500,
+        animationEasing: "linear",
+        animationEasingUpdate: "linear",
+      };
+
+      summary_chart.setOption(summary_option);
 
       window.addEventListener("resize", function () {
         main_chart.resize();
+        summary_chart.resize();
       });
     </script>
 
     <script type="text/javascript">
-      const main_container = document.getElementById("main_container");
-      const machine_canvasEl = new bootstrap.Offcanvas("#machine_canvas");
       const machine_list = document.querySelectorAll(".machine-list li");
       let machineName;
 
-      let xAxis = [];
-      let seriesBar = [];
-      let seriesLine = [];
+      let xAxis = []; // เก็บข้อมูล วันที่
+      let seriesBar = []; // เก็บข้อมูลผลผลิตแต่ล่ะรอบ **รอบล่ะ 5 นาที
+      let seriesLine = []; // เก็บข้อมูลผลผลิตสะสม
       let datetime, lot, productName, amount;
+      let summary_machine = [];
 
-      function processItem(machineName, dataArr) {
-        xAxis = [];
-        seriesBar = [];
-        seriesLine = [];
-        // machine_canvasEl.hide();
+      function mainChart(machineName, batch_size, dataArr) {
+        xAxis = []; // เก็บข้อมูล วันที่
+        seriesBar = []; // เก็บข้อมูลผลผลิตแต่ล่ะรอบ **รอบล่ะ 5 นาที
+        seriesLine = []; // เก็บข้อมูลผลผลิตสะสม
 
-        document.getElementById("machine_name").innerHTML =
-          "เครื่อง " + machineName;
+        document.getElementById("machine_name").innerHTML = "เครื่อง " + machineName;
 
-        sum = 0;
+        let sum = 0;
         dataArr.forEach((data) => {
           datetime = data[0];
           lot = data[1];
@@ -491,6 +571,10 @@
           sum += amount;
           seriesLine.push(sum);
         });
+
+        let percentage = (sum / batch_size) * 100;
+        percentage = percentage.toFixed(2);
+        summary_machine.push({ machineName, percentage });
 
         main_chart.setOption({
           xAxis: [
@@ -526,43 +610,32 @@
         });
 
         const startDateTime = new Date(convertDateTimeString(xAxis[0]));
-        const endDateTime = new Date(
-          convertDateTimeString(xAxis[xAxis.length - 1])
-        );
+        const endDateTime = new Date(convertDateTimeString(xAxis[xAxis.length - 1]));
 
         const timeDifference = endDateTime.getTime() - startDateTime.getTime();
         const hours = Math.floor(timeDifference / (1000 * 60 * 60));
-        const minutes = Math.floor(
-          (timeDifference % (1000 * 60 * 60)) / (1000 * 60)
-        );
+        const minutes = Math.floor((timeDifference % (1000 * 60 * 60)) / (1000 * 60));
 
         const total_minutes = Math.floor(hours * 60 + minutes);
 
-        const batch_size = 10000;
-
-        document.getElementById(
-          "total"
-        ).innerHTML = `${sum.toLocaleString()} กล่อง`;
-        document.getElementById(
-          "batch_size"
-        ).innerHTML = `จากเป้า ${batch_size.toLocaleString()} กล่อง`;
-        document.getElementById(
-          "latest_information"
-        ).innerHTML = `ข้อมูลล่าสุด ${xAxis[xAxis.length - 1].replace(
-          "\n",
-          " "
-        )}`;
-        document.getElementById(
-          "product_name"
-        ).innerHTML = `ชื่อยา: ${productName}`;
+        document.getElementById("total").innerHTML = `${sum.toLocaleString()} กล่อง`;
+        document.getElementById("batch_size").innerHTML = `จากเป้า ${batch_size.toLocaleString()} กล่อง`;
+        document.getElementById("latest_information").innerHTML = `ข้อมูลล่าสุด ${xAxis[xAxis.length - 1].replace( "\n", " ")}`;
+        document.getElementById("product_name").innerHTML = `ชื่อยา: ${productName}`;
         document.getElementById("lot").innerHTML = `เลขที่ผลิต: ${lot}`;
-        document.getElementById(
-          "period_time"
-        ).innerHTML = `เวลาผ่านไปแล้ว: ${hours} ชั่วโมง ${minutes} นาที`;
-        // document.getElementById("time_finish").innerHTML = ;
-        document.getElementById("average").innerHTML = `เฉลี่ย: ${Math.floor(
-          4500 / total_minutes
-        )} กล่อง/นาที `;
+        document.getElementById("period_time").innerHTML = `เวลาผ่านไปแล้ว: ${hours} ชั่วโมง ${minutes} นาที`;
+
+        const lastNumbers = seriesBar.slice(-10);
+        const sumLastNumbers = lastNumbers.reduce((accumulator, currentValue) => accumulator + currentValue);
+        const total_average = Math.round(sumLastNumbers / (lastNumbers.length * 5));
+
+        document.getElementById("average").innerHTML = `เฉลี่ย: ${total_average} กล่อง/นาที `;
+
+        const time_finish = Math.floor((batch_size - sum) / total_average);
+        const hours_finish =  Math.floor(time_finish / 60);
+        const minutes_finish = Math.floor(time_finish - (hours_finish * 60));
+        document.getElementById("time_finish").innerHTML = `จะเสร็จในอีก (โดยประมาณ) ${hours_finish} ชั่วโมง ${minutes_finish} นาที`;
+        
 
         // machine_list.forEach((li) => {
         //   li.classList.remove("machine-active");
@@ -583,11 +656,13 @@
 
       async function processArrayWithDelay(dataObj, delay) {
         let index = 0;
-        let machineName, dataArr;
+        let machineName, batch_size, dataArr;
         while (true) {
           machineName = dataObj[index].machineName;
+          batch_size = dataObj[index].batch_size;
           dataArr = dataObj[index].dataArr;
-          processItem(machineName, dataArr);
+          
+          mainChart(machineName, batch_size, dataArr);
           await new Promise((resolve) => setTimeout(resolve, delay));
 
           index++;
@@ -595,48 +670,87 @@
           if (index >= dataObj.length) {
             main_container.style.display = "none";
             summary_container.style.display = "block";
+            console.log(summary_machine);
             await summary(delay);
+            summary_machine = [];
             index = 0;
+            dataObj = dataObj2
           }
         }
       }
 
       processArrayWithDelay(dataObj, 5000);
+
+      // setInterval(function() {
+      //   google.script.run.withSuccessHandler((result) => {
+      //     dataObj = result;
+      //   }).getData();
+      // }, 60000)
     </script>
 
     <script type="text/javascript">
       let score = 0;
       async function summary(delay) {
-        const summary_container = document.getElementById("summary_container");
-        const summary_chart = echarts.init(
-          document.getElementById("summary_chart")
-        );
+        let yAxis_data = [];
+        let series_data = [];
+
+        summary_machine.forEach((mc) => {
+          yAxis_data.push(mc.machineName);
+          series_data.push(mc.percentage);
+        });
 
         let summary_option = {
-          grid: { containLabel: true },
-          xAxis: { name: "amount" },
-          yAxis: { type: "category" },
           visualMap: {
             orient: "horizontal",
             left: "center",
-            min: 20,
+            min: 0,
             max: 100,
-            text: ["การผลิตล่าช้า", "การผลิตปกติ"],
-            // Map the score column to color
+            text: ["100", "0"],
             dimension: 0,
             inRange: {
               color: ["#FD665F", "#FFCE34", "#65B581"],
             },
           },
+          grid: { containLabel: true },
+          xAxis: {
+            name: "เปอร์เซ็นต์",
+            min: 0,
+            max: 100,
+          },
+          yAxis: {
+            type: "category",
+            data: yAxis_data,
+          },
           series: [
             {
               type: "bar",
-              encode: {
-                x: "amount",
-                y: "product",
+              data: series_data,
+              label: {
+                show: true,
+                position: "right",
+                fontSize: 16,
+                formatter: "ผลิตไปแล้ว \n {c|{c}} %",
+                backgroundColor: "rgb(242,242,242)",
+                borderColor: "#aaa",
+                borderWidth: 1,
+                borderRadius: 4,
+                padding: [5, 10],
+                lineHeight: 20,
+                rich: {
+                  c: {
+                    align: "center",
+                    color: "#ff8811",
+                    textBorderColor: "#000",
+                    textBorderWidth: 1,
+                    fontSize: 16,
+                  },
+                },
               },
             },
           ],
+          legend: {
+            show: true,
+          },
 
           animationDuration: 2000,
           animationDurationUpdate: 500,
@@ -646,24 +760,7 @@
 
         summary_chart.setOption(summary_option);
 
-        score += 100;
-        summary_chart.setOption({
-          dataset: {
-            source: [
-              ["score", "amount", "product"],
-              [45 + score / 80, 452 + score, "Strip1"],
-              [50 + score / 80, 502 + score, "Strip2"],
-              [55 + score / 80, 552 + score, "Strip3"],
-              [60 + score / 80, 602 + score, "Strip4"],
-              [65 + score / 80, 652 + score, "Blister1"],
-              [70 + score / 80, 702 + score, "Blister2"],
-              [75 + score / 80, 782 + score, "Blister3"],
-            ],
-          },
-        });
         await new Promise((resolve) => setTimeout(resolve, 5000));
-
-        
 
         main_container.style.display = "block";
         summary_container.style.display = "none";

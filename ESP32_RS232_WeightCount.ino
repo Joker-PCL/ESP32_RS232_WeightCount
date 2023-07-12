@@ -341,6 +341,8 @@ int readSerial() {
       }
     } else {
       readString = "";
+      PCS_Cache = 0;
+      current_pcs = 0;
       PCS_TimerCheck = 0;       // รีเซ็ตเวลาเริ่มต้นการวาง
       Sensor_PreviousState = true;  // เปลี่ยนสถานะการรับข้อมูล
       delay(100);
