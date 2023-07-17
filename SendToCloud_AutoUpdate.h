@@ -88,6 +88,7 @@ void IRAM_ATTR isr() {
 void firmwareUpdate(String version) {
   vTaskDelete(Task1);
   vTaskDelete(Task2);
+  sendToCloud();
   lcd.clear();
   textEnd("UPDATE FIRMWERE", 2, 0);
   textEnd("VERSION " + version, 4, 1);
@@ -223,12 +224,13 @@ void autoUpdate(void* val) {
 
   // Init and get the time
   configTime(gmtOffset_sec, daylightOffset_sec, ntpServer);
+  FirmwareVersionCheck();
   delay(1000);
 
   for (;;) {
     if (button_boot.pressed) {  //to connect wifi via Android esp touch app
       Serial.println("Firmware update Starting..");
-      firmwareUpdate("<2>");
+      firmwareUpdate("<x>");
       button_boot.pressed = false;
     }
 
