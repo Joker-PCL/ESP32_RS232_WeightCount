@@ -265,7 +265,6 @@ bool Sensor_PreviousState = true;
 
 int readSerial() {
   Serial.println("ReadSerialPort>>");
-  Serial2.flush();
 
   PCS = 0;
   PCS_Cache = 0;
@@ -327,6 +326,7 @@ int readSerial() {
             delay(100);
             digitalWrite(BUZZER, LOW);
             delay(100);
+            Serial2.flush();
             return current_pcs;
           }
         } else {
@@ -344,8 +344,7 @@ int readSerial() {
       PCS_Cache = 0;
       PCS_TimerCheck = 0;       // รีเซ็ตเวลาเริ่มต้นการวาง
       Sensor_PreviousState = true;  // เปลี่ยนสถานะการรับข้อมูล
-      delay(100);
-      Serial2.flush();
+      Serial2.read();
     }
   }
 }
