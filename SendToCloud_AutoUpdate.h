@@ -51,6 +51,8 @@ void sendToCloud() {
     url += "machineID=" + String(machineID);
     url += "&";
     url += "amount=" + String(count);
+    url += "&";
+    url += "amountNC=" + String(countNC);
 
     Serial.print("POST data to spreadsheet:");
     Serial.println(url);
@@ -91,8 +93,10 @@ void firmwareUpdate(String version) {
   vTaskDelete(Task2);
   sendToCloud();
   lcd.clear();
+  digitalWrite(BUZZER, HIGH);
   textEnd("UPDATE FIRMWERE", 2, 0);
-  textEnd("VERSION " + version, 4, 1);
+  textEnd("VERSION " + version, 3, 1);
+  digitalWrite(BUZZER, LOW);
   WiFiClientSecure client;
   client.setCACert(rootCACertificate);
   httpUpdate.setLedPin(LED_STATUS, LOW);

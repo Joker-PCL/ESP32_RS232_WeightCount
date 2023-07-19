@@ -19,7 +19,7 @@ const char* ssid5 = "weight_table";
 const char* password = "plant172839";
 
 String FirmwareVer = {
-  "2.3"
+  "2.3.1"
 };
 
 #define URL_fw_Version "https://raw.githubusercontent.com/Joker-PCL/ESP32_RS232_WeightCount/version2.0/bin_version.txt"
