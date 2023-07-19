@@ -70,6 +70,7 @@ void sendToCloud() {
       String payload = http.getString();
       Serial.println("Payload: " + payload);
       count = 0;  // Reset count
+      countNC = 0;  // Reset count
     } else {
       Serial.println("Failed to connect to the server");
     }

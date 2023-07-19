@@ -177,7 +177,6 @@ void mainLoop(void *val) {
       lcd.setCursor(0, 3);
       lcd.print("WEIGHING: " + String(currentWeight) + " PCS");
       Total++;
-      count++;
       lcd.setCursor(0, 1);
       lcd.print("TOTAL: " + String(Total) + " PCS");
       EEPROM.writeUInt(total_address, Total);
@@ -185,6 +184,7 @@ void mainLoop(void *val) {
       delay(200);
 
       if (currentWeight == Master) {
+        count++;
         Serial.println("Passed: " + String(currentWeight) + " PCS");
         clearScreen(3);
         lcd.setCursor(7, 3);
@@ -192,6 +192,7 @@ void mainLoop(void *val) {
         digitalWrite(LED_GREEN, HIGH);
         passed_previousTime = millis();
       } else {
+        countNC++;
         Serial.println("Fail: " + String(currentWeight) + " PCS");
         clearScreen(3);
         lcd.setCursor(4, 3);

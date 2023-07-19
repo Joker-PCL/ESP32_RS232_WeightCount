@@ -19,7 +19,7 @@ const char* ssid5 = "weight_table";
 const char* password = "plant172839";
 
 String FirmwareVer = {
-  "2.2"
+  "2.3"
 };
 
 #define URL_fw_Version "https://raw.githubusercontent.com/Joker-PCL/ESP32_RS232_WeightCount/version2.0/bin_version.txt"
@@ -53,6 +53,7 @@ unsigned long machineID = 20100;  // machine ID
 int total_address = 10;  // total address EEPROM
 unsigned int Total = 0;  // total
 unsigned int count = 0;  // cache count
+unsigned int countNC = 0;  // cache count
 
 const int master_number = 9;
 int MasterList[master_number] = { 3, 5, 8, 10, 25, 30, 35, 50, 100 };
