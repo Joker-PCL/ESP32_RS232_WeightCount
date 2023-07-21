@@ -203,14 +203,35 @@ void mainLoop(void *val) {
   }
 }
 
+// Set master value and check Device
 int setMaster() {
   int master_selected = 0;
+  unsigned long pressTime_checkDevice = 0;
+
   Serial.println("PRIMARY:" + String(MasterList[master_selected]) + " PCS");
   lcd.setCursor(10, 2);
   lcd.print(String(MasterList[master_selected]) + " PCS ");
 
   while (Master <= 0) {
-    // total -1
+    // check device
+    if (digitalRead(btn_select) == 0) {
+      delay(100);
+      if (pressTime_checkDevice == 0) {
+        pressTime_checkDevice = millis();  // บันทึกเวลาเริ่มต้นการกดค้าง
+      }
+      if ((millis() - pressTime_checkDevice) > 2000) {  // ตรวจสอบเวลาการกดค้าง
+        lcd.noBlink();
+        digitalWrite(BUZZER, HIGH);
+        delay(500);
+        digitalWrite(BUZZER, LOW);
+        delay(1000);
+        pressTime_checkDevice = 0;  // รีเซ็ตเวลาเริ่มต้นการกดค้าง
+      }
+    } else {
+      pressTime_checkDevice = 0;  // รีเซ็ตเวลาเริ่มต้นการกดค้าง
+    }
+
+    // select
     btn_select_currentstate = digitalRead(btn_select);
     if (btn_select_currentstate == 0 && btn_select_previousstate == 1) {
       digitalWrite(BUZZER, HIGH);
@@ -230,7 +251,7 @@ int setMaster() {
     btn_select_previousstate = btn_select_currentstate;
 
     // Confirm
-    if (!digitalRead(btn_confirm)) {
+    if (digitalRead(btn_confirm) == 0) {
       delay(100);
       if (pressTime_countReset == 0) {
         pressTime_countReset = millis();  // บันทึกเวลาเริ่มต้นการกดค้าง
@@ -251,6 +272,82 @@ int setMaster() {
       }
     } else {
       pressTime_countReset = 0;  // รีเซ็ตเวลาเริ่มต้นการกดค้าง
+    }
+  }
+}
+
+void checkDevice() {
+  unsigned long previousMillis = 0;
+  bool ledState = false;
+
+  while (true) {
+    lcd.clear();
+    lcd.setCursor(0, 0);
+    lcd.print("WiFi: ");
+    lcd.setCursor(0, 1);
+    lcd.print("WiFi RSSI: ");
+    lcd.setCursor(0, 2);
+    lcd.print("Sensor: ");
+
+    if (digitalRead(SENSOR) == 0) {
+      digitalWrite(LED_RED, HIGH);
+      lcd.setCursor(8, 2);
+      lcd.print("ON ");
+    } else {
+      digitalWrite(LED_RED, LOW);
+      lcd.setCursor(8, 2);
+      lcd.print("OFF");
+    }
+
+    if (WiFi.status() == WL_CONNECTED) {
+      lcd.setCursor(6, 0);
+      lcd.print(WiFi.SSID());
+      lcd.setCursor(11, 1);
+      int rssi = WiFi.RSSI();
+      if (rssi >= -50) {
+        lcd.print("Excellent");
+      } else if (rssi >= -70) {
+        lcd.print("Good     ");
+      } else {
+        lcd.print("Weak     ");
+      }
+
+      if (millis() - previousMillis >= 1000) {
+        previousMillis = millis();  // บันทึกค่าเวลาปัจจุบัน
+
+        ledState = !ledState;
+
+        if (ledState) {
+          digitalWrite(LED_GREEN, HIGH);
+        } else {
+          digitalWrite(LED_GREEN, LOW);
+        }
+      }
+    } else {
+      digitalWrite(LED_GREEN, LOW);
+    }
+
+    char incomingByte;
+    static char receivedData[10];  // อาร์เรย์เก็บข้อมูลที่อ่านได้
+    static int dataIndex = 0;      // ดัชนีของอาร์เรย์ receivedData
+
+    //  check Serial Data cache
+    if (Serial2.available() > 0) {
+      incomingByte = Serial2.read();             // อ่านค่าที่ส่งมาจาก RS232
+      if (incomingByte != '\n') {                // เมื่อไม่พบตัวขึ้นบรรทัดใหม่
+        receivedData[dataIndex] = incomingByte;  // เก็บค่าที่อ่านได้ในอาร์เรย์
+        dataIndex++;
+      } else {                           // เมื่อพบตัวขึ้นบรรทัดใหม่
+        receivedData[dataIndex] = '\0';  // ตั้งค่าตัวสิ้นสุดสตริง
+        dataIndex = 0;                   // เริ่มต้นดัชนีใหม่สำหรับอาร์เรย์ receivedData
+      }
+    }
+
+    lcd.setCursor(0, 3);
+    lcd.print("RS232: " + String(receivedData));
+
+    if (digitalRead(btn_confirm) == 0) {
+      ESP.restart();
     }
   }
 }
@@ -319,7 +416,7 @@ int readSerial() {
             PCS_TimerCheck = millis();  // บันทึกเวลาเริ่มต้นการวาง
           }
 
-          if ((millis() - PCS_TimerCheck) > 500) {  // ตรวจสอบเวลาการกดค้าง
+          if ((millis() - PCS_TimerCheck) > 700) {  // ตรวจสอบเวลาการกดค้าง
             Sensor_PreviousState = false;           // เปลี่ยนสถานะการรับข้อมูล
             PCS_TimerCheck = 0;                     // รีเซ็ตเวลาเริ่มต้นการวาง
             readString = "";
@@ -343,7 +440,7 @@ int readSerial() {
     } else {
       readString = "";
       PCS_Cache = 0;
-      PCS_TimerCheck = 0;       // รีเซ็ตเวลาเริ่มต้นการวาง
+      PCS_TimerCheck = 0;           // รีเซ็ตเวลาเริ่มต้นการวาง
       Sensor_PreviousState = true;  // เปลี่ยนสถานะการรับข้อมูล
       Serial2.read();
     }
