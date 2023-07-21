@@ -226,6 +226,7 @@ int setMaster() {
         digitalWrite(BUZZER, LOW);
         delay(1000);
         pressTime_checkDevice = 0;  // รีเซ็ตเวลาเริ่มต้นการกดค้าง
+        checkDevice();
       }
     } else {
       pressTime_checkDevice = 0;  // รีเซ็ตเวลาเริ่มต้นการกดค้าง
