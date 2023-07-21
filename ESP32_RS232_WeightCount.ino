@@ -287,7 +287,7 @@ void checkDevice() {
     lcd.setCursor(0, 0);
     lcd.print("WiFi: ");
     lcd.setCursor(0, 1);
-    lcd.print("WiFi RSSI: ");
+    lcd.print("RSSI: ");
     lcd.setCursor(0, 2);
     lcd.print("Sensor: ");
 
@@ -306,7 +306,7 @@ void checkDevice() {
       if (WiFi.status() == WL_CONNECTED) {
         lcd.setCursor(6, 0);
         lcd.print(WiFi.SSID());
-        lcd.setCursor(11, 1);
+        lcd.setCursor(6, 1);
         int rssi = WiFi.RSSI();
         if (rssi >= -50) {
           lcd.print("Excellent");
@@ -352,7 +352,7 @@ void checkDevice() {
     if (millis() - previousMillis2 >= 1000) {
       previousMillis2 = millis();  // บันทึกค่าเวลาปัจจุบัน
       lcd.setCursor(8, 3);
-      lcd.print(receivedData);
+      lcd.print(String(receivedData));
     }
 
     if (digitalRead(btn_confirm) == 0) {
