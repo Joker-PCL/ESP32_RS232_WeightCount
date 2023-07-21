@@ -301,21 +301,22 @@ void checkDevice() {
       lcd.print("OFF");
     }
 
-    if (WiFi.status() == WL_CONNECTED) {
-      lcd.setCursor(6, 0);
-      lcd.print(WiFi.SSID());
-      lcd.setCursor(11, 1);
-      int rssi = WiFi.RSSI();
-      if (rssi >= -50) {
-        lcd.print("Excellent");
-      } else if (rssi >= -70) {
-        lcd.print("Good     ");
-      } else {
-        lcd.print("Weak     ");
-      }
+    if (millis() - previousMillis1 >= 1000) {
+      previousMillis1 = millis();  // บันทึกค่าเวลาปัจจุบัน
+      if (WiFi.status() == WL_CONNECTED) {
+        lcd.setCursor(6, 0);
+        lcd.print(WiFi.SSID());
+        lcd.setCursor(11, 1);
+        int rssi = WiFi.RSSI();
+        if (rssi >= -50) {
+          lcd.print("Excellent");
+        } else if (rssi >= -70) {
+          lcd.print("Good     ");
+        } else {
+          lcd.print("Weak     ");
+        }
 
-      if (millis() - previousMillis1 >= 1000) {
-        previousMillis1 = millis();  // บันทึกค่าเวลาปัจจุบัน
+
 
         ledState = !ledState;
 
@@ -324,9 +325,10 @@ void checkDevice() {
         } else {
           digitalWrite(LED_GREEN, LOW);
         }
+
+      } else {
+        digitalWrite(LED_GREEN, LOW);
       }
-    } else {
-      digitalWrite(LED_GREEN, LOW);
     }
 
     char incomingByte;
@@ -344,11 +346,11 @@ void checkDevice() {
         dataIndex = 0;                   // เริ่มต้นดัชนีใหม่สำหรับอาร์เรย์ receivedData
       }
     }
-    
+
     lcd.setCursor(0, 3);
     lcd.print("RS232: ");
-    if (millis() - previousMillis2 >= 500) {
-      previousMillis1 = millis();  // บันทึกค่าเวลาปัจจุบัน
+    if (millis() - previousMillis2 >= 1000) {
+      previousMillis2 = millis();  // บันทึกค่าเวลาปัจจุบัน
       lcd.setCursor(8, 3);
       lcd.print(receivedData);
     }
