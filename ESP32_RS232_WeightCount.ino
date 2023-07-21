@@ -278,7 +278,8 @@ int setMaster() {
 }
 
 void checkDevice() {
-  unsigned long previousMillis = 0;
+  unsigned long previousMillis1 = 0;
+  unsigned long previousMillis2 = 0;
   bool ledState = false;
 
   while (true) {
@@ -290,7 +291,7 @@ void checkDevice() {
     lcd.setCursor(0, 2);
     lcd.print("Sensor: ");
 
-    if (digitalRead(SENSOR) == 0) {
+    if (digitalRead(SENSOR) == 1) {
       digitalWrite(LED_RED, HIGH);
       lcd.setCursor(8, 2);
       lcd.print("ON ");
@@ -313,8 +314,8 @@ void checkDevice() {
         lcd.print("Weak     ");
       }
 
-      if (millis() - previousMillis >= 1000) {
-        previousMillis = millis();  // บันทึกค่าเวลาปัจจุบัน
+      if (millis() - previousMillis1 >= 1000) {
+        previousMillis1 = millis();  // บันทึกค่าเวลาปัจจุบัน
 
         ledState = !ledState;
 
@@ -343,9 +344,14 @@ void checkDevice() {
         dataIndex = 0;                   // เริ่มต้นดัชนีใหม่สำหรับอาร์เรย์ receivedData
       }
     }
-
+    
     lcd.setCursor(0, 3);
-    lcd.print("RS232: " + String(receivedData));
+    lcd.print("RS232: ");
+    if (millis() - previousMillis2 >= 500) {
+      previousMillis1 = millis();  // บันทึกค่าเวลาปัจจุบัน
+      lcd.setCursor(8, 3);
+      lcd.print(receivedData);
+    }
 
     if (digitalRead(btn_confirm) == 0) {
       ESP.restart();
