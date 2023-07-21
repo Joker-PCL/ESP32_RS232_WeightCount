@@ -281,16 +281,17 @@ void checkDevice() {
   unsigned long previousMillis1 = 0;
   unsigned long previousMillis2 = 0;
   bool ledState = false;
+  lcd.clear();
+  lcd.setCursor(0, 0);
+  lcd.print("WiFi: ");
+  lcd.setCursor(0, 1);
+  lcd.print("RSSI: ");
+  lcd.setCursor(0, 2);
+  lcd.print("Sensor: ");
+  lcd.setCursor(0, 3);
+  lcd.print("RS232: ");
 
   while (true) {
-    lcd.clear();
-    lcd.setCursor(0, 0);
-    lcd.print("WiFi: ");
-    lcd.setCursor(0, 1);
-    lcd.print("RSSI: ");
-    lcd.setCursor(0, 2);
-    lcd.print("Sensor: ");
-
     if (digitalRead(SENSOR) == 1) {
       digitalWrite(LED_RED, HIGH);
       lcd.setCursor(8, 2);
@@ -315,8 +316,6 @@ void checkDevice() {
         } else {
           lcd.print("Weak     ");
         }
-
-
 
         ledState = !ledState;
 
@@ -347,8 +346,6 @@ void checkDevice() {
       }
     }
 
-    lcd.setCursor(0, 3);
-    lcd.print("RS232: ");
     if (millis() - previousMillis2 >= 1000) {
       previousMillis2 = millis();  // บันทึกค่าเวลาปัจจุบัน
       lcd.setCursor(8, 3);
