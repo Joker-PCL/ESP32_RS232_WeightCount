@@ -303,13 +303,13 @@ void checkDevice() {
 
   lcd.clear();
   lcd.setCursor(0, 0);
-  lcd.print("WiFi: null");
+  lcd.print("WiFi: NULL");
   lcd.setCursor(0, 1);
-  lcd.print("RSSI: null");
+  lcd.print("RSSI: NULL");
   lcd.setCursor(0, 2);
   lcd.print("Sensor: ");
   lcd.setCursor(0, 3);
-  lcd.print("RS232: null");
+  lcd.print("RS232: NULL");
 
   while (true) {
     if (digitalRead(SENSOR) == 1) {
@@ -357,6 +357,8 @@ void checkDevice() {
       lcd.print("null");
     }
 
+    Serial2.read();
+    
     // char incomingByte;
     // static char receivedData[10];  // อาร์เรย์เก็บข้อมูลที่อ่านได้
     // static int dataIndex = 0;      // ดัชนีของอาร์เรย์ receivedData
