@@ -97,6 +97,9 @@ void setup() {
     checkDevice();
   }
 
+  digitalWrite(LED_RED, LOW);
+  digitalWrite(LED_GREEN, LOW);
+
   // start program
   xTaskCreatePinnedToCore(autoUpdate, "Task0", 100000, NULL, 10, &Task0, 0);
   xTaskCreatePinnedToCore(readButton, "Task1", 5000, NULL, 9, &Task1, 0);
@@ -363,8 +366,8 @@ void checkDevice() {
       }
     }
 
-    if (millis() - previousMillis2 >= 100) {
-      previousMillis2 = millis();  // บันทึกค่าเวลาปัจจุบัน
+    // if (millis() - previousMillis2 >= 100) {
+      // previousMillis2 = millis();  // บันทึกค่าเวลาปัจจุบัน
       if (serialMonitor.length() > 0) {
         serialMonitor.replace("n", "");
         serialMonitor.replace("\0", "");
@@ -372,7 +375,7 @@ void checkDevice() {
         lcd.setCursor(7, 3);
         lcd.print(serialMonitor);
         serialMonitor = "";
-      }
+      // }
     }
 
     if (digitalRead(btn_confirm) == 0) {
