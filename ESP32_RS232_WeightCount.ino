@@ -349,36 +349,44 @@ void checkDevice() {
       digitalWrite(LED_GREEN, LOW);
     }
 
-
-    char incomingByte;
-    static char receivedData[10];  // อาร์เรย์เก็บข้อมูลที่อ่านได้
-    static int dataIndex = 0;      // ดัชนีของอาร์เรย์ receivedData
-
-    //  check Serial Data cache
     if (Serial2.available() > 0) {
-      incomingByte = Serial2.read();             // อ่านค่าที่ส่งมาจาก RS232
-      if (incomingByte != '\n') {                // เมื่อไม่พบตัวขึ้นบรรทัดใหม่
-        receivedData[dataIndex] = incomingByte;  // เก็บค่าที่อ่านได้ในอาร์เรย์
-        dataIndex++;
-      } else {                           // เมื่อพบตัวขึ้นบรรทัดใหม่
-        receivedData[dataIndex] = '\0';  // ตั้งค่าตัวสิ้นสุดสตริง
-        serialMonitor = receivedData;
-        dataIndex = 0;  // เริ่มต้นดัชนีใหม่สำหรับอาร์เรย์ receivedData
-      }
+      lcd.setCursor(7, 3);
+      lcd.print("OK  ");
+    } else {
+      lcd.setCursor(7, 3);
+      lcd.print("null");
     }
 
-    if (serialMonitor.length() > 0) {
-      serialMonitor.replace("n", "");
+    // char incomingByte;
+    // static char receivedData[10];  // อาร์เรย์เก็บข้อมูลที่อ่านได้
+    // static int dataIndex = 0;      // ดัชนีของอาร์เรย์ receivedData
 
-      if (serialMonitor_cache != serialMonitor) {
-        serialMonitor.trim();
-        lcd.setCursor(7, 3);
-        lcd.print(serialMonitor);
-        serialMonitor = "";
-      }
+    // //  check Serial Data cache
+    // if (Serial2.available() > 0) {
+    //   incomingByte = Serial2.read();             // อ่านค่าที่ส่งมาจาก RS232
+    //   if (incomingByte != '\n') {                // เมื่อไม่พบตัวขึ้นบรรทัดใหม่
+    //     receivedData[dataIndex] = incomingByte;  // เก็บค่าที่อ่านได้ในอาร์เรย์
+    //     dataIndex++;
+    //   } else {                           // เมื่อพบตัวขึ้นบรรทัดใหม่
+    //     receivedData[dataIndex] = '\0';  // ตั้งค่าตัวสิ้นสุดสตริง
+    //     serialMonitor = receivedData;
+    //     dataIndex = 0;  // เริ่มต้นดัชนีใหม่สำหรับอาร์เรย์ receivedData
+    //   }
+    // }
 
-      serialMonitor_cache = serialMonitor;
-    }
+    // if (serialMonitor.length() > 0) {
+    //   serialMonitor.replace("n", "");
+
+    //   if (serialMonitor_cache != serialMonitor) {
+    //     serialMonitor.trim();
+    //     lcd.setCursor(7, 3);
+    //     lcd.print(serialMonitor);
+    //     serialMonitor = "";
+    //     Serial2.flush();
+    //   }
+
+    //   serialMonitor_cache = serialMonitor;
+    // }
 
     if (digitalRead(btn_confirm) == 0) {
       return;
