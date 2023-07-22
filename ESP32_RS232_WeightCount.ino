@@ -344,6 +344,9 @@ void checkDevice() {
 
         ledState = !ledState;
       }
+
+      Serial2.read();  // เคลียร์ serial
+
     } else {
       digitalWrite(LED_GREEN, LOW);
     }
@@ -352,7 +355,7 @@ void checkDevice() {
     char incomingByte;
     static char receivedData[10];  // อาร์เรย์เก็บข้อมูลที่อ่านได้
     static int dataIndex = 0;      // ดัชนีของอาร์เรย์ receivedData
-
+    
     //  check Serial Data cache
     if (Serial2.available() > 0) {
       incomingByte = Serial2.read();             // อ่านค่าที่ส่งมาจาก RS232
@@ -366,16 +369,13 @@ void checkDevice() {
       }
     }
 
-    if (millis() - previousMillis2 >= 500) {
-      previousMillis2 = millis();  // บันทึกค่าเวลาปัจจุบัน
-      if (serialMonitor.length() > 0) {
-        serialMonitor.replace("n", "");
-        serialMonitor.replace("\0", "");
-        serialMonitor.trim();
-        lcd.setCursor(7, 3);
-        lcd.print(serialMonitor);
-        serialMonitor = "";
-      }
+    if (serialMonitor.length() >= 10) {
+      serialMonitor.replace("n", "");
+      serialMonitor.replace("\0", "");
+      serialMonitor.trim();
+      lcd.setCursor(7, 3);
+      lcd.print(serialMonitor);
+      serialMonitor = "";
     }
 
     if (digitalRead(btn_confirm) == 0) {
