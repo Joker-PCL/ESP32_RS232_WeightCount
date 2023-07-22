@@ -49,6 +49,11 @@ void setup() {
   Serial.println("machineID: " + String(machineID));
   Serial.println("Total: " + String(Total));
 
+  int numNetworks = sizeof(ssidArray) / sizeof(ssidArray[0]);
+  for (int i = 0; i < numNetworks; i++) {
+    wifiMulti.addAP(ssidArray[i], password);
+  }
+
   pinMode(btn_select, INPUT_PULLUP);
   pinMode(btn_confirm, INPUT_PULLUP);
 
@@ -82,6 +87,15 @@ void setup() {
   // esp32 auto update setup
   pinMode(button_boot.PIN, INPUT);
   attachInterrupt(button_boot.PIN, isr, RISING);
+
+  // check Device
+  if (digitalRead(btn_select) == 0) {
+    digitalWrite(BUZZER, HIGH);
+    delay(500);
+    digitalWrite(BUZZER, LOW);
+    delay(1000);
+    checkDevice();
+  }
 
   // start program
   xTaskCreatePinnedToCore(autoUpdate, "Task0", 100000, NULL, 10, &Task0, 0);
@@ -214,23 +228,23 @@ int setMaster() {
 
   while (Master <= 0) {
     // check device
-    if (digitalRead(btn_select) == 0) {
-      delay(100);
-      if (pressTime_checkDevice == 0) {
-        pressTime_checkDevice = millis();  // บันทึกเวลาเริ่มต้นการกดค้าง
-      }
-      if ((millis() - pressTime_checkDevice) > 2000) {  // ตรวจสอบเวลาการกดค้าง
-        lcd.noBlink();
-        digitalWrite(BUZZER, HIGH);
-        delay(500);
-        digitalWrite(BUZZER, LOW);
-        delay(1000);
-        pressTime_checkDevice = 0;  // รีเซ็ตเวลาเริ่มต้นการกดค้าง
-        checkDevice();
-      }
-    } else {
-      pressTime_checkDevice = 0;  // รีเซ็ตเวลาเริ่มต้นการกดค้าง
-    }
+    // if (digitalRead(btn_select) == 0) {
+    //   delay(100);
+    //   if (pressTime_checkDevice == 0) {
+    //     pressTime_checkDevice = millis();  // บันทึกเวลาเริ่มต้นการกดค้าง
+    //   }
+    //   if ((millis() - pressTime_checkDevice) > 2000) {  // ตรวจสอบเวลาการกดค้าง
+    //     lcd.noBlink();
+    //     digitalWrite(BUZZER, HIGH);
+    //     delay(500);
+    //     digitalWrite(BUZZER, LOW);
+    //     delay(1000);
+    //     pressTime_checkDevice = 0;  // รีเซ็ตเวลาเริ่มต้นการกดค้าง
+    //     checkDevice();
+    //   }
+    // } else {
+    //   pressTime_checkDevice = 0;  // รีเซ็ตเวลาเริ่มต้นการกดค้าง
+    // }
 
     // select
     btn_select_currentstate = digitalRead(btn_select);
@@ -304,9 +318,10 @@ void checkDevice() {
       lcd.print("OFF");
     }
 
-    if (millis() - previousMillis1 >= 1000) {
-      previousMillis1 = millis();  // บันทึกค่าเวลาปัจจุบัน
-      if (WiFi.status() == WL_CONNECTED) {
+    if (wifiMulti.run() == WL_CONNECTED) {
+      if (millis() - previousMillis1 >= 1000) {
+        previousMillis1 = millis();  // บันทึกค่าเวลาปัจจุบัน
+
         lcd.setCursor(6, 0);
         lcd.print(WiFi.SSID());
         lcd.setCursor(6, 1);
@@ -326,11 +341,11 @@ void checkDevice() {
         } else {
           digitalWrite(LED_GREEN, LOW);
         }
-
-      } else {
-        digitalWrite(LED_GREEN, LOW);
       }
+    } else {
+      digitalWrite(LED_GREEN, LOW);
     }
+
 
     char incomingByte;
     static char receivedData[10];  // อาร์เรย์เก็บข้อมูลที่อ่านได้
@@ -345,18 +360,18 @@ void checkDevice() {
       } else {                           // เมื่อพบตัวขึ้นบรรทัดใหม่
         receivedData[dataIndex] = '\0';  // ตั้งค่าตัวสิ้นสุดสตริง
         serialMonitor = receivedData;
-        dataIndex = 0;                   // เริ่มต้นดัชนีใหม่สำหรับอาร์เรย์ receivedData
+        dataIndex = 0;  // เริ่มต้นดัชนีใหม่สำหรับอาร์เรย์ receivedData
       }
     }
 
     if (millis() - previousMillis2 >= 100) {
       previousMillis2 = millis();  // บันทึกค่าเวลาปัจจุบัน
       lcd.setCursor(8, 3);
-      lcd.print(String(serialMonitor));
+      lcd.print(serialMonitor);
     }
 
     if (digitalRead(btn_confirm) == 0) {
-      ESP.restart();
+      return;
     }
   }
 }

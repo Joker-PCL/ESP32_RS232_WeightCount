@@ -210,12 +210,6 @@ void autoUpdate(void* val) {
   Serial.print("Active firmware version:");
   Serial.println(FirmwareVer);
 
-  wifiMulti.addAP(ssid1, password);
-  wifiMulti.addAP(ssid2, password);
-  wifiMulti.addAP(ssid3, password);
-  wifiMulti.addAP(ssid4, password);
-  wifiMulti.addAP(ssid5, password);
-
   Serial.println("Waiting for WiFi");
   while (wifiMulti.run() != WL_CONNECTED) {
     delay(100);

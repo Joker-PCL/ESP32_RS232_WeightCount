@@ -11,15 +11,11 @@ TaskHandle_t Task2;
 
 WiFiMulti wifiMulti;
 
-const char* ssid1 = "pcl_plant1";
-const char* ssid2 = "pcl_plant2";
-const char* ssid3 = "pcl_plant3";
-const char* ssid4 = "pcl_plant4";
-const char* ssid5 = "weight_table";
+const char* ssidArray[] = {"pcl_plant1", "pcl_plant2",  "pcl_plant3", "pcl_plant4", "weight_table"};
 const char* password = "plant172839";
 
 String FirmwareVer = {
-  "2.3.3"
+  "2.3.4"
 };
 
 #define URL_fw_Version "https://raw.githubusercontent.com/Joker-PCL/ESP32_RS232_WeightCount/version2.0/bin_version.txt"
