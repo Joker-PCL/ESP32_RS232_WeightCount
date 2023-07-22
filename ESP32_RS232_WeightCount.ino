@@ -366,8 +366,8 @@ void checkDevice() {
       }
     }
 
-    // if (millis() - previousMillis2 >= 100) {
-      // previousMillis2 = millis();  // บันทึกค่าเวลาปัจจุบัน
+    if (millis() - previousMillis2 >= 500) {
+      previousMillis2 = millis();  // บันทึกค่าเวลาปัจจุบัน
       if (serialMonitor.length() > 0) {
         serialMonitor.replace("n", "");
         serialMonitor.replace("\0", "");
@@ -375,7 +375,7 @@ void checkDevice() {
         lcd.setCursor(7, 3);
         lcd.print(serialMonitor);
         serialMonitor = "";
-      // }
+      }
     }
 
     if (digitalRead(btn_confirm) == 0) {
