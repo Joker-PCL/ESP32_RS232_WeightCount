@@ -299,13 +299,13 @@ void checkDevice() {
 
   lcd.clear();
   lcd.setCursor(0, 0);
-  lcd.print("WiFi: ");
+  lcd.print("WiFi: null");
   lcd.setCursor(0, 1);
-  lcd.print("RSSI: ");
+  lcd.print("RSSI: null");
   lcd.setCursor(0, 2);
   lcd.print("Sensor: ");
   lcd.setCursor(0, 3);
-  lcd.print("RS232: ");
+  lcd.print("RS232: null");
 
   while (true) {
     if (digitalRead(SENSOR) == 1) {
@@ -366,8 +366,11 @@ void checkDevice() {
 
     if (millis() - previousMillis2 >= 100) {
       previousMillis2 = millis();  // บันทึกค่าเวลาปัจจุบัน
-      lcd.setCursor(8, 3);
-      lcd.print(serialMonitor);
+      if (serialMonitor.length() > 0) {
+        lcd.setCursor(8, 3);
+        lcd.print(serialMonitor);
+        serialMonitor = "";
+      }
     }
 
     if (digitalRead(btn_confirm) == 0) {
