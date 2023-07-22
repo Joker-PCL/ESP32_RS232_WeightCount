@@ -322,18 +322,18 @@ void checkDevice() {
       lcd.print("OFF");
     }
 
-    if (wifiMulti.run() == WL_CONNECTED) {
-      lcd.setCursor(6, 0);
-      lcd.print(WiFi.SSID());
-      lcd.setCursor(6, 1);
-      int rssi = WiFi.RSSI();
-      if (rssi >= -50) {
-        lcd.print("Excellent");
-      } else if (rssi >= -70) {
-        lcd.print("Good     ");
-      } else {
-        lcd.print("Weak     ");
-      }
+    // if (wifiMulti.run() == WL_CONNECTED) {
+    //   lcd.setCursor(6, 0);
+    //   lcd.print(WiFi.SSID());
+    //   lcd.setCursor(6, 1);
+    //   int rssi = WiFi.RSSI();
+    //   if (rssi >= -50) {
+    //     lcd.print("Excellent");
+    //   } else if (rssi >= -70) {
+    //     lcd.print("Good     ");
+    //   } else {
+    //     lcd.print("Weak     ");
+    //   }
 
       if (millis() - previousMillis1 >= 1000) {
         previousMillis1 = millis();  // บันทึกค่าเวลาปัจจุบัน
@@ -345,9 +345,9 @@ void checkDevice() {
 
         ledState = !ledState;
       }
-    } else {
-      digitalWrite(LED_GREEN, LOW);
-    }
+    // } else {
+    //   digitalWrite(LED_GREEN, LOW);
+    // }
 
     if (Serial2.available() > 0) {
       lcd.setCursor(7, 3);
@@ -358,7 +358,7 @@ void checkDevice() {
     }
 
     Serial2.read();
-    
+
     // char incomingByte;
     // static char receivedData[10];  // อาร์เรย์เก็บข้อมูลที่อ่านได้
     // static int dataIndex = 0;      // ดัชนีของอาร์เรย์ receivedData
