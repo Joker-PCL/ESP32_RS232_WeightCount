@@ -319,28 +319,27 @@ void checkDevice() {
     }
 
     if (wifiMulti.run() == WL_CONNECTED) {
+      lcd.setCursor(6, 0);
+      lcd.print(WiFi.SSID());
+      lcd.setCursor(6, 1);
+      int rssi = WiFi.RSSI();
+      if (rssi >= -50) {
+        lcd.print("Excellent");
+      } else if (rssi >= -70) {
+        lcd.print("Good     ");
+      } else {
+        lcd.print("Weak     ");
+      }
+
       if (millis() - previousMillis1 >= 1000) {
         previousMillis1 = millis();  // บันทึกค่าเวลาปัจจุบัน
-
-        lcd.setCursor(6, 0);
-        lcd.print(WiFi.SSID());
-        lcd.setCursor(6, 1);
-        int rssi = WiFi.RSSI();
-        if (rssi >= -50) {
-          lcd.print("Excellent");
-        } else if (rssi >= -70) {
-          lcd.print("Good     ");
-        } else {
-          lcd.print("Weak     ");
-        }
-
-        ledState = !ledState;
-
         if (ledState) {
           digitalWrite(LED_GREEN, HIGH);
         } else {
           digitalWrite(LED_GREEN, LOW);
         }
+
+        ledState = !ledState;
       }
     } else {
       digitalWrite(LED_GREEN, LOW);
@@ -367,6 +366,8 @@ void checkDevice() {
     if (millis() - previousMillis2 >= 100) {
       previousMillis2 = millis();  // บันทึกค่าเวลาปัจจุบัน
       if (serialMonitor.length() > 0) {
+        serialMonitor.replace("\n", "");
+        serialMonitor.replace("\0", "");
         lcd.setCursor(8, 3);
         lcd.print(serialMonitor);
         serialMonitor = "";
