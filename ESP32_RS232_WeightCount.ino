@@ -281,6 +281,8 @@ void checkDevice() {
   unsigned long previousMillis1 = 0;
   unsigned long previousMillis2 = 0;
   bool ledState = false;
+  String serialMonitor;
+
   lcd.clear();
   lcd.setCursor(0, 0);
   lcd.print("WiFi: ");
@@ -342,14 +344,15 @@ void checkDevice() {
         dataIndex++;
       } else {                           // เมื่อพบตัวขึ้นบรรทัดใหม่
         receivedData[dataIndex] = '\0';  // ตั้งค่าตัวสิ้นสุดสตริง
+        serialMonitor = receivedData;
         dataIndex = 0;                   // เริ่มต้นดัชนีใหม่สำหรับอาร์เรย์ receivedData
       }
     }
 
-    if (millis() - previousMillis2 >= 1000) {
+    if (millis() - previousMillis2 >= 100) {
       previousMillis2 = millis();  // บันทึกค่าเวลาปัจจุบัน
       lcd.setCursor(8, 3);
-      lcd.print(String(receivedData));
+      lcd.print(String(serialMonitor));
     }
 
     if (digitalRead(btn_confirm) == 0) {
@@ -422,7 +425,7 @@ int readSerial() {
             PCS_TimerCheck = millis();  // บันทึกเวลาเริ่มต้นการวาง
           }
 
-          if ((millis() - PCS_TimerCheck) > 700) {  // ตรวจสอบเวลาการกดค้าง
+          if ((millis() - PCS_TimerCheck) > 500) {  // ตรวจสอบเวลาการกดค้าง
             Sensor_PreviousState = false;           // เปลี่ยนสถานะการรับข้อมูล
             PCS_TimerCheck = 0;                     // รีเซ็ตเวลาเริ่มต้นการวาง
             readString = "";
