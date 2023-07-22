@@ -366,9 +366,10 @@ void checkDevice() {
     if (millis() - previousMillis2 >= 100) {
       previousMillis2 = millis();  // บันทึกค่าเวลาปัจจุบัน
       if (serialMonitor.length() > 0) {
-        serialMonitor.replace("\n", "");
+        serialMonitor.replace("n", "");
         serialMonitor.replace("\0", "");
-        lcd.setCursor(8, 3);
+        serialMonitor.trim();
+        lcd.setCursor(7, 3);
         lcd.print(serialMonitor);
         serialMonitor = "";
       }
