@@ -468,6 +468,8 @@ int readSerial() {
 
         Serial.print("current_pcs: ");
         Serial.println(current_pcs);  // พิมพ์สตริงที่แปลงจากค่าที่อ่านได้
+        lcd.setCursor(11, 3);
+        lcd.print(current_pcs);
       }
     } else {
       readString = "";
