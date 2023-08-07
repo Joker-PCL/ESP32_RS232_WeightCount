@@ -44,7 +44,7 @@ int btn_confirm_previousstate = 0;
 unsigned int currentTime = 0;  // time stamp millis()
 
 int machineID_address = 0;        // machine address EEPROM
-unsigned long machineID = 20106;  // machine ID
+unsigned long machineID = 20105;  // machine ID
 
 int total_address = 10;  // total address EEPROM
 unsigned int Total = 0;  // total

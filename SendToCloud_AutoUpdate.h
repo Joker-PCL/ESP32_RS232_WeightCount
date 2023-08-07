@@ -91,7 +91,10 @@ void IRAM_ATTR isr() {
 void firmwareUpdate(String version) {
   vTaskDelete(Task1);
   vTaskDelete(Task2);
-  sendToCloud();
+
+  if (count > 0)
+    sendToCloud();
+
   lcd.clear();
   digitalWrite(BUZZER, HIGH);
   textEnd("UPDATE FIRMWERE", 2, 0);
