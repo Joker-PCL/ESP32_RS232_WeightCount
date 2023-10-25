@@ -15,7 +15,7 @@ const char* ssidArray[] = {"pcl_plant1", "pcl_plant2",  "pcl_plant3", "pcl_plant
 const char* password = "plant172839";
 
 String FirmwareVer = {
-  "2.3.1"
+  "2.3.2"
 };
 
 #define URL_fw_Version "https://raw.githubusercontent.com/Joker-PCL/ESP32_RS232_WeightCount/version2.0/bin_version.txt"
@@ -44,7 +44,7 @@ int btn_confirm_previousstate = 0;
 unsigned int currentTime = 0;  // time stamp millis()
 
 int machineID_address = 0;        // machine address EEPROM
-unsigned long machineID = 20105;  // machine ID
+unsigned long machineID = 20101;  // machine ID
 
 int total_address = 10;  // total address EEPROM
 unsigned int Total = 0;  // total

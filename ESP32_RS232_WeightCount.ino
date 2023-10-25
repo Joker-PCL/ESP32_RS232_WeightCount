@@ -460,7 +460,7 @@ int readSerial() {
             PCS_TimerCheck = millis();  // บันทึกเวลาเริ่มต้นการวาง
           }
 
-          if ((millis() - PCS_TimerCheck) > 500) {  // ตรวจสอบเวลาการกดค้าง
+          if ((millis() - PCS_TimerCheck) > 700) {  // ตรวจสอบเวลาการกดค้าง
             Sensor_PreviousState = false;           // เปลี่ยนสถานะการรับข้อมูล
             PCS_TimerCheck = 0;                     // รีเซ็ตเวลาเริ่มต้นการวาง
             readString = "";
