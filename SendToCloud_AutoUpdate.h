@@ -7,8 +7,8 @@
 unsigned long previousMillis = 0;  // will store last time LED was updated
 unsigned long previousMillis_2 = 0;
 unsigned long previousMillis_3 = 0;
-const long interval_update = 900000;       // check up date 15 min
-const long interval_sendTocloud = 300000;  // send data 5 min
+const long interval_update = 900000;      // check up date 15 min
+const long interval_sendTocloud = 60000;  // send data 5 min
 const long mini_interval = 1000;
 
 struct Button {
@@ -23,29 +23,8 @@ Button button_boot = {
   false
 };
 
-/*void IRAM_ATTR isr(void* arg) {
-    Button* s = static_cast<Button*>(arg);
-    s->numberKeyPresses += 1;
-    s->pressed = true;
-}*/
-
 void sendToCloud() {
   if (WiFi.status() == WL_CONNECTED) {
-    static bool flag = false;
-    struct tm timeinfo;
-
-    // Get current time
-    if (!getLocalTime(&timeinfo)) {
-      Serial.println("Failed to obtain time");
-      return;
-    }
-
-    strftime(timeStringBuff, sizeof(timeStringBuff), "%A, %B %d %Y %H:%M:%S", &timeinfo);
-    String asString(timeStringBuff);
-    asString.replace(" ", "-");
-    Serial.print("Time:");
-    Serial.println(asString);
-
     // This will send the request to the server
     String url = host + GOOGLE_SCRIPT_ID + "/exec?";
     url += "machineID=" + String(machineID);
@@ -71,7 +50,7 @@ void sendToCloud() {
     if (httpCode == 200) {
       String payload = http.getString();
       Serial.println("Payload: " + payload);
-      count = 0;  // Reset count
+      count = 0;    // Reset count
       countNC = 0;  // Reset count
     } else {
       Serial.println("Failed to connect to the server");
@@ -80,7 +59,7 @@ void sendToCloud() {
     http.end();
   }
 
-  delay(2000);
+  delay(500);
 }
 
 void IRAM_ATTR isr() {
@@ -182,7 +161,7 @@ void repeatedCall() {
     FirmwareVersionCheck();
   }
 
-  if ((currentMillis - previousMillis_2) >= interval_sendTocloud && count > 0) {
+  if ((currentMillis - previousMillis_2) >= interval_sendTocloud) {
     previousMillis_2 = currentMillis;
     sendToCloud();
   }
@@ -225,7 +204,6 @@ void autoUpdate(void* val) {
   Serial.println(WiFi.localIP());
 
   // Init and get the time
-  configTime(gmtOffset_sec, daylightOffset_sec, ntpServer);
   FirmwareVersionCheck();
   delay(1000);
 

@@ -101,7 +101,7 @@ void setup() {
   digitalWrite(LED_GREEN, LOW);
 
   // start program
-  xTaskCreatePinnedToCore(autoUpdate, "Task0", 100000, NULL, 10, &Task0, 0);
+  xTaskCreatePinnedToCore(autoUpdate, "Task0", 50000, NULL, 10, &Task0, 0);
   xTaskCreatePinnedToCore(readButton, "Task1", 5000, NULL, 9, &Task1, 0);
   xTaskCreatePinnedToCore(mainLoop, "Task2", 20000, NULL, 8, &Task2, 1);
 }

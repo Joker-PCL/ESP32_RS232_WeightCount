@@ -1,9 +1,3 @@
-// time sever
-const char* ntpServer = "pool.ntp.org";
-const long gmtOffset_sec = 19800;
-const int daylightOffset_sec = 0;
-char timeStringBuff[50];  //50 chars should be enough
-
 //  multitask
 TaskHandle_t Task0;
 TaskHandle_t Task1;
@@ -15,7 +9,7 @@ const char* ssidArray[] = {"pcl_plant1", "pcl_plant2",  "pcl_plant3", "pcl_plant
 const char* password = "plant172839";
 
 String FirmwareVer = {
-  "2.3.2"
+  "2.3.3"
 };
 
 #define URL_fw_Version "https://raw.githubusercontent.com/Joker-PCL/ESP32_RS232_WeightCount/version2.0/bin_version.txt"
