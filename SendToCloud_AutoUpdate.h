@@ -163,7 +163,8 @@ void repeatedCall() {
 
   if ((currentMillis - previousMillis_2) >= interval_sendTocloud) {
     previousMillis_2 = currentMillis;
-    sendToCloud();
+    if (Master)
+      sendToCloud();
   }
 
   // if ((currentMillis - previousMillis_3) >= mini_interval) {
